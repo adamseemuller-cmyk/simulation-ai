@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+            color: #202123;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            height: 60px;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        #chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 20px 120px;
+            max-width: 850px;
+            width: 100%;
+            margin: auto;
+        }
+
+        .message {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .user {
+            font-weight: bold;
+        }
+
+        .assistant {
+            background: #f7f7f8;
+            padding: 18px;
+            border-radius: 12px;
+        }
+
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            padding: 15px;
+        }
+
+        .input-box {
+            max-width: 850px;
+            margin: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            border: 1px solid #d9d9e3;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            width: 90px;
+            border: none;
+            border-radius: 12px;
+            background: #202123;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        @media (max-width: 600px) {
+            #chat {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .input-box {
+                gap: 6px;
+            }
+
+            button {
+                width: 70px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    🌍 Simulation AI
+</header>
+
+<div id="chat">
+
+    <div class="message assistant">
+        Bienvenue dans ta simulation.
+
+        Le monde évolue indépendamment de toi.
+
+        Tu peux écrire librement ce que tu veux faire.
+
+        Que veux-tu commencer par faire ?
+    </div>
+
+</div>
+
+<div class="input-area">
+    <div class="input-box">
+        <textarea id="input" placeholder="Écris ta décision..."></textarea>
+        <button onclick="sendMessage()">Envoyer</button>
+    </div>
+</div>
+
+<script>
+
+function sendMessage() {
+
+    const input = document.getElementById("input");
+    const chat = document.getElementById("chat");
+
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    const userMessage = document.createElement("div");
+    userMessage.className = "message user";
+    userMessage.textContent = "Toi : " + text;
+
+    chat.appendChild(userMessage);
+
+    input.value = "";
+
+    const response = document.createElement("div");
+    response.className = "message assistant";
+
+    response.textContent =
+        "Décision enregistrée.\n\n" +
+        "Le monde commence à réagir à ton action...\n\n" +
+        "(L'IA et la mémoire seront ajoutées ensuite.)";
+
+    chat.appendChild(response);
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+</script>
+
+</body>
+</html>
