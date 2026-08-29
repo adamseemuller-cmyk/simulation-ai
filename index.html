@@ -3,539 +3,298 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation IA - RPG Professionnel</title>
+  <title>Simulation AI - Choix & Modes Stratégiques</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Police propre, moderne et professionnelle -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
   <style>
-    :root {
-      --bg-main: #0f172a;
-      --bg-panel: #1e293b;
-      --border-color: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-hover: #0ea5e9;
-      --danger: #f43f5e;
-      --success: #10b981;
-      --warning: #f59e0b;
-    }
-
-    * { box-sizing: border-box; }
-
-    body { 
-      font-family: 'Inter', sans-serif; 
-      max-width: 900px; 
-      margin: 0 auto; 
-      padding: 30px 20px; 
-      background: var(--bg-main); 
-      color: var(--text-main);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 25px;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 15px;
-    }
-
-    h1 { 
-      font-weight: 600;
-      color: var(--text-main); 
-      font-size: 1.4rem;
-      letter-spacing: -0.02em;
-      margin: 0 0 5px 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 20px; }
     
-    #hero-title { 
-      color: var(--text-muted); 
-      font-size: 0.9rem;
-    }
+    .app-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
     
-    #quest-banner { 
-      background: var(--bg-panel); 
-      color: var(--text-main); 
-      padding: 12px 18px; 
-      border: 1px solid var(--border-color); 
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-bottom: 20px; 
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    header { text-align: center; padding: 10px 0; border-bottom: 1px solid #1e293b; }
+    header h1 { font-size: 1.6rem; color: #38bdf8; letter-spacing: 1px; }
+    header p { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
+
+    .banner { background: #1e293b; border: 1px solid #334155; border-left: 4px solid #38bdf8; padding: 12px 16px; border-radius: 6px; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
     
-    .game-container { 
-      display: flex; 
-      gap: 20px; 
-      margin-bottom: 20px; 
-    }
+    .main-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+    @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
 
-    @media (max-width: 768px) {
-      .game-container { flex-direction: column; }
-    }
+    .log-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .msg { padding: 10px 14px; border-radius: 6px; font-size: 0.95rem; line-height: 1.5; }
+    .msg.system { background: #0f172a; border-left: 3px solid #64748b; color: #cbd5e1; }
+    .msg.user { background: #0369a1; color: #fff; align-self: flex-end; max-width: 85%; }
+    .msg.ai { background: #334155; color: #f8fafc; align-self: flex-start; max-width: 95%; }
+
+    .side-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .panel-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
     
-    #log { 
-      flex: 2; 
-      background: var(--bg-panel); 
-      border: 1px solid var(--border-color); 
-      border-radius: 8px;
-      padding: 20px; 
-      min-height: 400px; 
-      max-height: 500px; 
-      overflow-y: auto; 
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-    }
+    .stat-group { display: flex; flex-direction: column; gap: 4px; }
+    .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
+    .stat-value { font-size: 1rem; font-weight: 600; color: #f8fafc; }
+    .progress-bar { width: 100%; height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+    .progress-fill { height: 100%; background: #38bdf8; transition: width 0.3s; }
+
+    .controls-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
     
-    #stats-panel { 
-      flex: 1; 
-      background: var(--bg-panel); 
-      border: 1px solid var(--border-color); 
-      border-radius: 8px;
-      padding: 20px; 
-      height: fit-content; 
-    }
+    /* Sélection des modes */
+    .mode-selection-title { font-size: 1rem; color: #38bdf8; font-weight: 600; margin-bottom: 12px; }
+    .modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .mode-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px; text-align: left; cursor: pointer; transition: 0.2s; }
+    .mode-card:hover { border-color: #38bdf8; background: #1e293b; }
+    .mode-card h3 { font-size: 0.95rem; color: #f8fafc; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .mode-card p { font-size: 0.78rem; color: #94a3b8; line-height: 1.3; }
 
-    .panel-header {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
+    .setup-box { display: flex; flex-direction: column; gap: 12px; }
+    .setup-box input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.95rem; }
+    .setup-box button, .action-btn { padding: 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .setup-box button:hover, .action-btn:hover { background: #0369a1; }
+
+    .options-grid { display: flex; flex-direction: column; gap: 8px; }
+    .option-btn { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 12px 14px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 0.9rem; transition: 0.2s; font-weight: 500; }
+    .option-btn:hover { background: #334155; border-color: #38bdf8; }
+
+    .custom-input-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #334155; padding-top: 10px; }
+    .custom-input-group input { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.85rem; }
     
-    .stat-box { margin-bottom: 14px; }
-    .stat-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
-    .stat-value { font-size: 1.05rem; font-weight: 600; color: var(--text-main); }
+    .reset-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 10px; }
+    .reset-btn:hover { background: #ef44441a; }
     
-    /* Barres de progression élégantes */
-    .bar-outer {
-      background: #0f172a;
-      border: 1px solid var(--border-color);
-      height: 8px;
-      width: 100%;
-      border-radius: 4px;
-      margin-top: 6px;
-      overflow: hidden;
-    }
-    .bar-inner-hp { background: var(--success); height: 100%; width: 100%; transition: width 0.3s; }
-    .bar-inner-xp { background: var(--warning); height: 100%; width: 0%; transition: width 0.3s; }
-
-    .user { color: var(--accent); margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px; font-weight: 500; }
-    .ai { color: #cbd5e1; margin-bottom: 15px; line-height: 1.6; }
-    .dice-tag { color: var(--warning); font-weight: 500; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; font-size: 0.8rem; }
-
-    .options-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    
-    .option-btn { 
-      padding: 12px 16px; 
-      background: var(--bg-panel); 
-      color: var(--text-main); 
-      border: 1px solid var(--border-color); 
-      border-radius: 6px;
-      cursor: pointer; 
-      text-align: left; 
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem; 
-      transition: all 0.2s; 
-    }
-    .option-btn:hover:not(:disabled) { 
-      background: #273548; 
-      border-color: var(--accent);
-    }
-    .option-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .input-card { 
-      background: var(--bg-panel); 
-      border: 1px solid var(--border-color); 
-      border-radius: 8px;
-      padding: 20px; 
-      margin-bottom: 20px; 
-    }
-
-    .difficulty-select { display: flex; gap: 10px; margin-bottom: 15px; }
-    .diff-btn { 
-      flex: 1; 
-      padding: 10px; 
-      border: 1px solid var(--border-color); 
-      background: var(--bg-main); 
-      color: var(--text-muted); 
-      border-radius: 6px;
-      cursor: pointer; 
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 0.85rem; 
-      transition: 0.2s;
-    }
-    .diff-btn.active { background: #334155; color: var(--text-main); border-color: var(--accent); }
-    
-    .input-group { display: flex; gap: 10px; }
-    input { 
-      flex: 1; 
-      padding: 12px; 
-      border: 1px solid var(--border-color); 
-      background: var(--bg-main); 
-      color: var(--text-main); 
-      border-radius: 6px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
-    }
-    input:focus { outline: none; border-color: var(--accent); }
-
-    button.start-btn { 
-      padding: 12px 24px; 
-      background: var(--accent); 
-      color: #0f172a; 
-      border: none; 
-      border-radius: 6px;
-      cursor: pointer; 
-      font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-    button.start-btn:hover { background: var(--accent-hover); }
-
-    .heal-btn { 
-      background: rgba(16, 185, 129, 0.15); 
-      color: var(--success); 
-      border: 1px solid rgba(16, 185, 129, 0.3); 
-      padding: 2px 6px; 
-      border-radius: 4px;
-      cursor: pointer; 
-      font-family: 'Inter', sans-serif;
-      font-size: 0.75rem; 
-      margin-left: 6px; 
-      transition: 0.2s;
-    }
-    .heal-btn:hover { background: rgba(16, 185, 129, 0.3); }
-
-    .action-bar { display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; }
-    .action-btn { background: var(--bg-panel); flex: 1; padding: 10px; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500; transition: 0.2s; }
-    .action-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
-    .reset-btn:hover { color: var(--danger); border-color: var(--danger); }
-
-    #status-msg { margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 0.85rem; text-align: center; display: none; }
-    .status-error { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); }
-    .status-info { background: rgba(56, 189, 248, 0.1); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.2); }
+    .status-error { color: #f87171; font-size: 0.85rem; margin-top: 6px; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>SIMULATION INTERACTIVE</h1>
-    <div id="hero-title">Environnement de simulation textuelle assisté par IA</div>
-  </header>
+  <div class="app-container">
+    <header>
+      <h1>SIMULATION INTERACTIVE AI</h1>
+      <p>Modes de jeu thématiques, choix stratégiques & réalisme contrôlé</p>
+    </header>
 
-  <div id="quest-banner">
-    <span>🎯</span> <strong>Objectif actuel :</strong> <span id="quest-text">Initialisation de la session...</span>
-  </div>
+    <div class="banner">
+      <span>🎯</span>
+      <span id="questBanner">Sélectionnez un mode de jeu pour démarrer...</span>
+    </div>
 
-  <div class="game-container">
-    <div id="log">Chargement du journal système...</div>
-    
-    <div id="stats-panel">
-      <h3 class="panel-header">Paramètres & Statistiques</h3>
-      
-      <div class="stat-box">
-        <div class="stat-title">Progression</div>
-        <div class="stat-value" id="lvlDisplay" style="color:var(--warning);">Niv. 1</div>
-        <div class="bar-outer"><div id="xpBar" class="bar-inner-xp"></div></div>
+    <div class="main-grid">
+      <div class="log-panel" id="logPanel">
+        <div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour lancer la simulation.</div>
       </div>
 
-      <div class="stat-box">
-        <div class="stat-title">Intégrité (PV)</div>
-        <div class="stat-value" id="hpDisplay">100 / 100</div>
-        <div class="bar-outer"><div id="hpBar" class="bar-inner-hp"></div></div>
-      </div>
+      <div class="side-panel">
+        <div class="panel-title">Statistiques du personnage</div>
+        
+        <div class="stat-group">
+          <div class="stat-label">Progression / Niveau</div>
+          <div class="stat-value" id="levelVal">Niv. 1</div>
+          <div class="progress-bar"><div class="progress-fill" id="xpBar" style="width: 0%;"></div></div>
+        </div>
 
-      <div class="stat-box">
-        <div class="stat-title">Équipement</div>
-        <div id="weaponDisplay" style="color:var(--text-main); font-size: 0.9rem;">Mains nues</div>
-        <div id="armorDisplay" style="color:var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Vêtements simples</div>
-      </div>
+        <div class="stat-group">
+          <div class="stat-label">Santé / Énergie</div>
+          <div class="stat-value" id="hpVal">100 / 100</div>
+          <div class="progress-bar"><div class="progress-fill" id="hpBar" style="width: 100%; background:#4ade80;"></div></div>
+        </div>
 
-      <div class="stat-box">
-        <div class="stat-title">Ressources</div>
-        <div class="stat-value" id="goldDisplay" style="color:var(--warning);">0 Unités</div>
-      </div>
+        <div class="stat-group">
+          <div class="stat-label">Capital / Budget</div>
+          <div class="stat-value" id="goldVal" style="color:#facc15;">1 000 €</div>
+        </div>
 
-      <div class="stat-box">
-        <div class="stat-title">Inventaire</div>
-        <div id="inventoryDisplay" style="color:var(--text-muted); font-size: 0.85rem;">Vide</div>
+        <div class="stat-group">
+          <div class="stat-label">Statut / Équipement</div>
+          <div class="stat-value" id="equipVal" style="font-size:0.85rem; color:#94a3b8;">Standard</div>
+        </div>
+
+        <div class="stat-group">
+          <div class="stat-label">Inventaire / Objets</div>
+          <div id="invVal" style="font-size:0.85rem; color:#cbd5e1;">Vide</div>
+        </div>
+
+        <button class="reset-btn" onclick="resetGame()">Réinitialiser la simulation</button>
       </div>
     </div>
-  </div>
 
-  <div class="input-card" id="startInputArea">
-    <div style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em;">1. Sélection du niveau de difficulté :</div>
-    <div class="difficulty-select">
-      <button class="diff-btn" onclick="setDifficulty('Facile', this)">Facile</button>
-      <button class="diff-btn active" onclick="setDifficulty('Moyen', this)">Standard</button>
-      <button class="diff-btn" onclick="setDifficulty('Hardcore', this)">Expert / Hardcore</button>
+    <div class="controls-panel">
+      <!-- Choix du Mode -->
+      <div id="setupArea">
+        <div class="mode-selection-title">Choisissez votre mode de jeu :</div>
+        <div class="modes-grid">
+          <div class="mode-card" onclick="selectMode('survie')">
+            <h3>🌲 Survie</h3>
+            <p>Monde hostile, ressources rares. La santé et les choix prudents sont essentiels.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('guerre')">
+            <h3>⚔️ Guerre & Tactique</h3>
+            <p>Conflit militaire. Décisions de commandement, équipement et gestion de troupes.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('business')">
+            <h3>💼 Business & Carrière</h3>
+            <p>Entrepreneuriat et investissements. Visez l'empire financier et évitez la faillite.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('crime')">
+            <h3>🕶️ Monde du Crime</h3>
+            <p>Infiltration, affaires louches et pression policière. Risques élevés.</p>
+          </div>
+        </div>
+
+        <div class="setup-box" style="border-top:1px solid #334155; padding-top:12px;">
+          <label style="font-size:0.85rem; color:#94a3b8;">Ou créez votre propre contexte personnalisée :</label>
+          <input type="text" id="initialContext" placeholder="Ex: Détective privé à Londres en 1920 avec un revolver et 50£...">
+          <button onclick="startCustomSimulation()">Lancer en mode sur-mesure</button>
+        </div>
+      </div>
+
+      <!-- Commandes de jeu en cours -->
+      <div id="gameControls" style="display:none;" class="setup-box">
+        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom: 4px;">Choix stratégiques recommandés (Choix fermés) :</div>
+        <div class="options-grid" id="optionsGrid"></div>
+        
+        <div class="custom-input-group">
+          <input type="text" id="customAction" placeholder="Action personnalisée (soumise aux limites du réalisme)...">
+          <button class="action-btn" onclick="sendCustomAction()">Tenter l'action</button>
+        </div>
+        <div id="errorMsg" class="status-error"></div>
+      </div>
     </div>
-    <div style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em;">2. Définition du contexte initial :</div>
-    <div class="input-group">
-      <input type="text" id="actionInput" placeholder="Ex: Enquêteur cybernétique à Néo-Tokyo, 2142...">
-      <button class="start-btn" onclick="submitCustomInput()">Démarrer</button>
-    </div>
-  </div>
-
-  <div class="options-area" id="optionsArea" style="display:none;"></div>
-  
-  <div id="status-msg"></div>
-
-  <div class="action-bar">
-    <button class="action-btn" onclick="exportSave()">Exporter la partie (.json)</button>
-    <button class="action-btn" onclick="document.getElementById('importFile').click()">Importer une sauvegarde</button>
-    <input type="file" id="importFile" style="display:none" onchange="importSave(event)" accept=".json">
-    <button class="action-btn reset-btn" onclick="resetGame()">Réinitialiser</button>
   </div>
 
   <script>
     const SUPABASE_URL = "https://wzqvjndyyljhquxsmxae.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cXZqbmR5eWxqaHF1xHNteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNTA2MjEsImV4cCI6MjA1NTkyNjYyMX0.9G_M3wF59z7O-q1xW2J2x5O2lY6f4K1c"; 
     const GEMINI_API_KEY = "AQ.Ab8RN6LQAfPLUYckLMS70XIGVmjLJYRcRTeeqyt3s7foctjBYg";
-
-    let GAME_ID = localStorage.getItem("rpg_user_id");
-    if (!GAME_ID) {
-      GAME_ID = "user_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now();
-      localStorage.setItem("rpg_user_id", GAME_ID);
-    }
+    const GAME_ID = "11111111-1111-1111-1111-111111111111";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let history = [];
-    let gameSummary = "";
-    let selectedDifficulty = "Moyen";
-    let isProcessing = false;
     
-    let playerStats = { 
-      heroName: "Inconnu", 
-      difficulty: "Moyen",
-      level: 1, 
-      xp: 0, 
-      hp: 100, 
-      maxHp: 100, 
-      gold: 0, 
-      weapon: "Mains nues", 
-      armor: "Vêtements simples", 
+    let gameState = {
+      mode: "Libre",
+      level: 1,
+      xp: 0,
+      hp: 100,
+      maxHp: 100,
+      resources: 1000,
+      equipment: "Standard",
       inventory: [],
-      quest: "En attente de paramètres initiaux..."
+      quest: "Initialisation"
     };
 
-    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'une simulation narrative textuelle de type RPG. Adopte un ton mature, littéraire, sérieux et professionnel (pas de familiarités excessives ni de design enfantin).
-Consignes :
-1. Adapte la difficulté (Facile, Standard, Expert).
-2. Attribue entre 10 et 30 XP par tour.
-3. Réponds STRICTEMENT en JSON sans balises markdown :
+    const SYSTEM_INSTRUCTION = `Tu es le moteur de jeu de rôle et de simulation stratégique.
+RÈGLES STRICTES DE GAMEPLAY :
+1. Propose TOUJOURS 3 à 4 CHOIX FERMÉS (Option A, B, C, D) réalistes, pertinents et stratégiques.
+2. Si le joueur fait une action libre hors-limites, irréaliste ou absurde (ex: voler dans l'air, pouvoirs magiques, devenir millionnaire instantanément) :
+   - Tu DOIS la faire échouer ou la bloquer de façon réaliste et punitive dans le récit. Pas de capacités divines.
+3. Respecte la logique du monde (physique, argent, conséquences sociales).
+4. Réponds STRICTEMENT et UNIQUEMENT en format JSON valide (aucun texte autour, pas de balises markdown) :
 {
-  "hero_name": "Nom du personnage",
-  "quest": "Description courte de l'objectif actuel",
-  "narrative": "Suite du récit de manière immersive et mature (3-4 phrases)",
-  "dice_result": "Résultat de l'analyse (ex: 'Évaluation : 14/20 - Succès') ou null",
+  "quest": "Description de l'objectif actuel",
+  "narrative": "Texte de narration immersif (3 à 5 phrases)",
   "xp_gain": 15,
   "hp_change": 0,
-  "gold_change": 0,
-  "weapon": "Nom d'arme ou null",
-  "armor": "Nom d'armure ou null",
-  "item_add": "Nom d'objet ou null",
-  "item_remove": "Nom d'objet ou null",
-  "options": ["Option 1", "Option 2", "Option 3"]
+  "resources_change": 0,
+  "equipment_update": null,
+  "item_add": null,
+  "item_remove": null,
+  "options": ["Choix fermé 1", "Choix fermé 2", "Choix fermé 3"]
 }`;
 
-    function setDifficulty(diff, el) {
-      selectedDifficulty = diff;
-      document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-    }
-
-    function showStatus(msg, type = "info") {
-      const box = document.getElementById("status-msg");
-      box.innerText = msg;
-      box.className = type === "error" ? "status-error" : "status-info";
-      box.style.display = "block";
-    }
-
-    function hideStatus() {
-      document.getElementById("status-msg").style.display = "none";
-    }
-
-    async function loadGame() {
-      const { data } = await supabaseClient.from('games').select('actions, stats').eq('id', GAME_ID).single();
-
+    async function init() {
+      const { data } = await supabaseClient.from('games').select('actions').eq('id', GAME_ID).single();
       if (data && data.actions && data.actions.length > 0) {
         history = data.actions;
-        if (data.stats) playerStats = data.stats;
-        document.getElementById('startInputArea').style.display = 'none';
-        document.getElementById('optionsArea').style.display = 'flex';
+        document.getElementById('setupArea').style.display = 'none';
+        document.getElementById('gameControls').style.display = 'flex';
         render();
       } else {
-        history = [{ role: "system", text: "[SYSTÈME] Initialisation de la simulation. Définissez vos paramètres et votre scénario ci-dessous." }];
-        await saveHistory();
         render();
       }
     }
 
-    async function saveHistory() {
-      await supabaseClient.from('games').upsert({ 
-        id: GAME_ID, 
-        actions: history,
-        stats: playerStats 
-      });
+    async function saveState() {
+      await supabaseClient.from('games').upsert({ id: GAME_ID, actions: history });
     }
 
-    function checkLevelUp() {
-      const needed = playerStats.level * 100;
-      if (playerStats.xp >= needed) {
-        playerStats.xp -= needed;
-        playerStats.level++;
-        playerStats.maxHp += 20;
-        playerStats.hp = playerStats.maxHp;
-        showStatus(`Montée de niveau validée : Niveau ${playerStats.level} atteint (Intégrité maximale augmentée).`, "info");
-      }
-    }
+    function render(options = []) {
+      const logPanel = document.getElementById('logPanel');
+      logPanel.innerHTML = history.map(h => `<div class="msg ${h.role}">${h.text}</div>`).join('');
+      logPanel.scrollTop = logPanel.scrollHeight;
 
-    function usePotion(itemName) {
-      const idx = playerStats.inventory.indexOf(itemName);
-      if (idx !== -1) {
-        playerStats.inventory.splice(idx, 1);
-        playerStats.hp = Math.min(playerStats.maxHp, playerStats.hp + 35);
-        saveHistory();
-        render();
-        showStatus(`Ressource utilisée : ${itemName} (+35 PV)`, "info");
-      }
-    }
-
-    function updateStatsDisplay() {
-      document.getElementById('hero-title').innerText = playerStats.heroName !== "Inconnu" ? `Session active : ${playerStats.heroName} [Mode ${playerStats.difficulty}]` : "Environnement de simulation textuelle assisté par IA";
-      document.getElementById('quest-text').innerText = playerStats.quest;
+      document.getElementById('questBanner').innerText = `Objectif : ${gameState.quest}`;
+      document.getElementById('levelVal').innerText = `Niv. ${gameState.level} (${gameState.xp} / ${gameState.level * 100} XP)`;
+      document.getElementById('xpBar').style.width = `${Math.min(100, (gameState.xp / (gameState.level * 100)) * 100)}%`;
       
-      const xpNeeded = playerStats.level * 100;
-      document.getElementById('lvlDisplay').innerText = `Niv. ${playerStats.level} (${playerStats.xp}/${xpNeeded} XP)`;
-      document.getElementById('xpBar').style.width = `${Math.min(100, (playerStats.xp / xpNeeded) * 100)}%`;
+      document.getElementById('hpVal').innerText = `${gameState.hp} / ${gameState.maxHp}`;
+      document.getElementById('hpBar').style.width = `${(gameState.hp / gameState.maxHp) * 100}%`;
+      
+      document.getElementById('goldVal').innerText = `${gameState.resources} €`;
+      document.getElementById('equipVal').innerText = gameState.equipment;
+      document.getElementById('invVal').innerText = gameState.inventory.length > 0 ? gameState.inventory.join(', ') : 'Vide';
 
-      document.getElementById('hpDisplay').innerText = `${playerStats.hp} / ${playerStats.maxHp}`;
-      const hpPct = Math.max(0, (playerStats.hp / playerStats.maxHp) * 100);
-      document.getElementById('hpBar').style.width = `${hpPct}%`;
-
-      document.getElementById('weaponDisplay').innerText = playerStats.weapon;
-      document.getElementById('armorDisplay').innerText = playerStats.armor;
-      document.getElementById('goldDisplay').innerText = `${playerStats.gold} Unités`;
-
-      const invContainer = document.getElementById('inventoryDisplay');
-      if (playerStats.inventory && playerStats.inventory.length > 0) {
-        invContainer.innerHTML = playerStats.inventory.map(item => {
-          if (item.toLowerCase().includes('potion') || item.toLowerCase().includes('soin') || item.toLowerCase().includes('pomme') || item.toLowerCase().includes('trousse')) {
-            return `${item} <button class="heal-btn" onclick="usePotion('${item}')">Consommer</button>`;
-          }
-          return `${item}`;
-        }).join('<br>');
-      } else {
-        invContainer.innerText = 'Vide';
-      }
-    }
-
-    function render(lastOptions = []) {
-      const log = document.getElementById('log');
-      log.innerHTML = history.map(h => {
-        if (h.role === 'user') return `<div class="user">> ${h.text}</div>`;
-        if (h.role === 'model' || h.role === 'system') {
-          let text = h.text.replace(/🎲 \*(.*?)\*/, '<span class="dice-tag">$1</span>');
-          return `<div class="ai">${text}</div>`;
-        }
-        return '';
-      }).join('');
-      log.scrollTop = log.scrollHeight;
-
-      updateStatsDisplay();
-
-      const optionsArea = document.getElementById('optionsArea');
-      optionsArea.innerHTML = '';
-      if (lastOptions.length > intVal = 0 && playerStats.hp > 0) {
-        lastOptions.forEach(opt => {
+      const optionsGrid = document.getElementById('optionsGrid');
+      optionsGrid.innerHTML = '';
+      if (options.length > 0 && gameState.hp > 0) {
+        options.forEach(opt => {
           const btn = document.createElement('button');
           btn.className = 'option-btn';
-          btn.innerText = `→ ${opt}`;
-          btn.disabled = isProcessing;
-          btn.onclick = () => selectOption(opt);
-          optionsArea.appendChild(btn);
+          btn.innerText = opt;
+          btn.onclick = () => executeTurn(opt);
+          optionsGrid.appendChild(btn);
         });
-      } else if (playerStats.hp <= 0) {
-        optionsArea.innerHTML = `<div style="color:var(--danger); font-weight:600; text-align:center; padding:15px; background:var(--bg-panel); border:1px solid var(--danger); border-radius:6px;">[CRITIQUE] Intégrité vitale compromise — Session terminée. Veuillez réinitialiser.</div>`;
       }
     }
 
-    async function summarizeOldHistory() {
-      if (history.length > 10) {
-        const oldEvents = history.slice(0, history.length - 6).map(h => `${h.role}: ${h.text}`).join('\n');
-        try {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: "Résume de manière concise et professionnelle les événements passés pour la mémoire du système :\n" + oldEvents }] }] })
-          });
-          const data = await res.json();
-          if (data.candidates && data.candidates[0]) {
-            gameSummary = "Synthèse contextuelle : " + data.candidates[0].content.parts[0].text;
-          }
-        } catch (e) {
-          console.error("Erreur de synthèse", e);
-        }
-      }
-    }
-
-    async function submitCustomInput() {
-      const input = document.getElementById('actionInput');
-      const text = input.value.trim();
-      if (!text || isProcessing) return;
-      playerStats.difficulty = selectedDifficulty;
-      document.getElementById('startInputArea').style.display = 'none';
-      document.getElementById('optionsArea').style.display = 'flex';
-      await playTurn(text);
-    }
-
-    async function selectOption(optionText) {
-      if (isProcessing) return;
-      await playTurn(optionText);
-    }
-
-    async function playTurn(userChoice) {
-      isProcessing = true;
-      hideStatus();
+    function selectMode(modeType) {
+      let context = "";
+      if (modeType === 'survie') context = "Mode Survie : Seul dans une forêt hostile après une catastrophe, avec un couteau et 50€.";
+      else if (modeType === 'guerre') context = "Mode Guerre : Commandant d'une petite escouade de reconnaissance en zone de conflit armé.";
+      else if (modeType === 'business') context = "Mode Business : Jeune entrepreneur ouvrant sa startup avec 5 000€ d'épargne à Paris.";
+      else if (modeType === 'crime') context = "Mode Crime : Petit membre d'un réseau clandestin cherchant à se faire un nom en ville.";
       
-      const diceRoll = Math.floor(Math.random() * 20) + 1;
-      const diceText = `[Évaluation algorithmique : ${diceRoll}/20]`;
+      gameState.mode = modeType;
+      launchGame(context);
+    }
 
-      history.push({ role: "user", text: `${userChoice} ${diceText}` });
+    function startCustomSimulation() {
+      const input = document.getElementById('initialContext').value.trim();
+      if (!input) return;
+      launchGame(`Mode Sur-mesure : ${input}`);
+    }
+
+    async function launchGame(initialContext) {
+      document.getElementById('setupArea').style.display = 'none';
+      document.getElementById('gameControls').style.display = 'flex';
+      await executeTurn(`Début de partie. Contexte : ${initialContext}`);
+    }
+
+    async function sendCustomAction() {
+      const input = document.getElementById('customAction');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      await executeTurn(text);
+    }
+
+    async function executeTurn(userAction) {
+      document.getElementById('errorMsg').innerText = '';
+      history.push({ role: "user", text: userAction });
       render();
-      await saveHistory();
-
-      await summarizeOldHistory();
-
-      const recentHistory = history.slice(-6);
-      let promptContext = SYSTEM_INSTRUCTION + "\n\nParamètres Actuels : " + JSON.stringify(playerStats);
-      if (gameSummary) promptContext += "\n\n" + gameSummary;
-      promptContext += "\n\nHistorique Récent :\n" + recentHistory.map(h => `${h.role}: ${h.text}`).join('\n');
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const prompt = `${SYSTEM_INSTRUCTION}\n\nÉtat actuel du joueur : ${JSON.stringify(gameState)}\nHistorique de la partie :\n${history.map(h => `${h.role}:${h.text}`).join('\n')}`;
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptContext }] }] })
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
-        if (res.status === 429) throw new Error("QUOTA_EXCEEDED");
-
         const data = await res.json();
+        
         if (data.error) {
-          if (data.error.message.includes("quota") || data.error.message.includes("limit")) throw new Error("QUOTA_EXCEEDED");
+          if (data.error.code === 429 || data.error.message.includes('quota')) {
+            throw new Error("Quota d'appels temporairement dépassé. Veuillez patienter ~30 secondes.");
+          }
           throw new Error(data.error.message);
         }
 
@@ -544,105 +303,46 @@ Consignes :
 
         const parsed = JSON.parse(rawText);
 
-        if (parsed.hero_name) playerStats.heroName = parsed.hero_name;
-        if (parsed.quest) playerStats.quest = parsed.quest;
-        if (parsed.weapon) playerStats.weapon = parsed.weapon;
-        if (parsed.armor) playerStats.armor = parsed.armor;
+        if (parsed.quest) gameState.quest = parsed.quest;
+        if (parsed.equipment_update) gameState.equipment = parsed.equipment_update;
         
-        playerStats.xp += (parsed.xp_gain || 10);
-        checkLevelUp();
-
-        playerStats.hp = Math.max(0, Math.min(playerStats.maxHp, playerStats.hp + (parsed.hp_change || 0)));
-        playerStats.gold = Math.max(0, playerStats.gold + (parsed.gold_change || 0));
-        
-        if (parsed.item_add) playerStats.inventory.push(parsed.item_add);
-        if (parsed.item_remove) {
-          const idx = playerStats.inventory.indexOf(parsed.item_remove);
-          if (idx !== -1) playerStats.inventory.splice(idx, 1);
+        gameState.xp += (parsed.xp_gain || 10);
+        if (gameState.xp >= gameState.level * 100) {
+          gameState.xp -= gameState.level * 100;
+          gameState.level++;
         }
 
-        let fullText = parsed.narrative;
-        if (parsed.dice_result) fullText = `🎲 *${parsed.dice_result}*\n\n` + fullText;
+        gameState.hp = Math.max(0, Math.min(gameState.maxHp, gameState.hp + (parsed.hp_change || 0)));
+        gameState.resources += (parsed.resources_change || 0);
 
-        history.push({ role: "model", text: fullText });
-        await saveHistory();
+        if (parsed.item_add) gameState.inventory.push(parsed.item_add);
+        if (parsed.item_remove) {
+          const idx = gameState.inventory.indexOf(parsed.item_remove);
+          if (idx !== -1) gameState.inventory.splice(idx, 1);
+        }
 
-        setTimeout(() => {
-          isProcessing = false;
-          render(parsed.options || []);
-        }, 1200);
+        history.push({ role: "ai", text: parsed.narrative });
+        await saveState();
+
+        render(parsed.options || []);
 
       } catch (err) {
-        isProcessing = false;
-        if (err.message === "QUOTA_EXCEEDED") {
-          showStatus("Attention : Limite de requêtes atteinte. Veuillez patienter 10 secondes avant de continuer.", "error");
-        } else {
-          showStatus("Erreur système : " + err.message, "error");
-        }
+        document.getElementById('errorMsg').innerText = err.message;
       }
-    }
-
-    function exportSave() {
-      const saveData = JSON.stringify({ history, playerStats, gameSummary }, null, 2);
-      const blob = new Blob([saveData], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Session_${playerStats.heroName}_Niv${playerStats.level}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importSave(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.history && data.playerStats) {
-            history = data.history;
-            playerStats = data.playerStats;
-            if (data.gameSummary) gameSummary = data.gameSummary;
-            await saveHistory();
-            document.getElementById('startInputArea').style.display = 'none';
-            document.getElementById('optionsArea').style.display = 'flex';
-            render();
-            showStatus("Sauvegarde importée avec succès.", "info");
-          }
-        } catch (err) {
-          showStatus("Échec de l'importation : format de fichier invalide.", "error");
-        }
-      };
-      reader.readAsText(file);
     }
 
     async function resetGame() {
-      if (confirm("Voulez-vous effacer la session en cours et réinitialiser l'environnement ?")) {
+      if (confirm("Réinitialiser entièrement la partie et effacer la sauvegarde ?")) {
         history = [];
-        gameSummary = "";
-        playerStats = { 
-          heroName: "Inconnu", 
-          difficulty: "Moyen",
-          level: 1, 
-          xp: 0, 
-          hp: 100, 
-          maxHp: 100, 
-          gold: 0, 
-          weapon: "Mains nues", 
-          armor: "Vêtements simples", 
-          inventory: [],
-          quest: "En attente de paramètres initiaux..."
-        };
+        gameState = { mode: "Libre", level: 1, xp: 0, hp: 100, maxHp: 100, resources: 1000, equipment: "Standard", inventory: [], quest: "Initialisation" };
         await supabaseClient.from('games').delete().eq('id', GAME_ID);
-        document.getElementById('startInputArea').style.display = 'block';
-        document.getElementById('optionsArea').style.display = 'none';
-        hideStatus();
-        loadGame();
+        document.getElementById('setupArea').style.display = 'block';
+        document.getElementById('gameControls').style.display = 'none';
+        init();
       }
     }
 
-    loadGame();
+    init();
   </script>
 </body>
 </html>
