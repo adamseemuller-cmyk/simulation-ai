@@ -163,7 +163,7 @@
     const SUPABASE_URL = "https://wzqvjndyyljhquxsmxae.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cXZqbmR5eWxqaHF1xHNteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNTA2MjEsImV4cCI6MjA1NTkyNjYyMX0.9G_M3wF59z7O-q1xW2J2x5O2lY6f4K1c"; 
     
-    // Insère ta clé API Groq (gsk_...) entre les guillemets ci-dessous
+    // Remets ta clé API Groq (gsk_...) entre les guillemets ci-dessous
     const GROQ_API_KEY = "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";
     
     const GAME_ID = "11111111-1111-1111-1111-111111111111";
@@ -257,7 +257,7 @@ RÈGLES STRICTES DE GAMEPLAY :
     function selectMode(modeType) {
       let context = "";
       if (modeType === 'survie') {
-        context = "Mode Survie : Seul dans une forêt hostile après une catastrophe, avec un couteau et 50€.";
+        context = "Mode Survie : Seul dans une forêt hostile après une catastrophe, avec un couteau et 50£.";
         gameState.resources = 50;
       } else if (modeType === 'guerre') {
         context = "Mode Guerre : Commandant d'une petite escouade de reconnaissance en zone de conflit armé.";
@@ -316,7 +316,7 @@ RÈGLES STRICTES DE GAMEPLAY :
             "Authorization": `Bearer ${GROQ_API_KEY}`
           },
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
+            model: "gemma2-9b-it",
             messages: messages,
             response_format: { type: "json_object" }
           })
