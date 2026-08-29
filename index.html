@@ -1,184 +1,161 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulation AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    script, const. SUPABASE_URL="https://itowpzagxdnlgpuvjwcz.supabase.co"
-    const SUPABASE_KEY=sb_publishable_3amJfTkMnMt5ymkJyNoCBQ_e7qEaN79
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    </script>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation AI</title>
+  
+  <!-- CDN Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #ffffff;
-            color: #202123;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            height: 60px;
-            border-bottom: 1px solid #e5e5e5;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        #chat {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px 20px 120px;
-            max-width: 850px;
-            width: 100%;
-            margin: auto;
-        }
-
-        .message {
-            margin-bottom: 25px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-
-        .user {
-            font-weight: bold;
-        }
-
-        .assistant {
-            background: #f7f7f8;
-            padding: 18px;
-            border-radius: 12px;
-        }
-
-        .input-area {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #e5e5e5;
-            padding: 15px;
-        }
-
-        .input-box {
-            max-width: 850px;
-            margin: auto;
-            display: flex;
-            gap: 10px;
-        }
-
-        textarea {
-            flex: 1;
-            resize: none;
-            min-height: 50px;
-            max-height: 150px;
-            border: 1px solid #d9d9e3;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 16px;
-            outline: none;
-        }
-
-        button {
-            width: 90px;
-            border: none;
-            border-radius: 12px;
-            background: #202123;
-            color: white;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        button:hover {
-            opacity: 0.85;
-        }
-
-        @media (max-width: 600px) {
-            #chat {
-                padding-left: 12px;
-                padding-right: 12px;
-            }
-
-            .input-box {
-                gap: 6px;
-            }
-
-            button {
-                width: 70px;
-            }
-        }
-    </style>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      color: #202123;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      height: 60px;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-weight: bold;
+      background: white;
+    }
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .message {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e5e5e5;
+      max-width: 600px;
+    }
+    .user-msg {
+      align-self: flex-end;
+      background: #e3f2fd;
+      border-color: #bbdefb;
+    }
+    #input-container {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e5e5e5;
+      display: flex;
+      gap: 10px;
+    }
+    textarea {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: none;
+      height: 50px;
+    }
+    button {
+      padding: 0 20px;
+      background: #10a37f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #1a7f64; }
+  </style>
 </head>
-
 <body>
 
-<header>
-    🌍 Simulation AI
-</header>
+  <header>🌐 Simulation AI</header>
 
-<div id="chat">
-
-    <div class="message assistant">
-        Bienvenue dans ta simulation.
-
-        Le monde évolue indépendamment de toi.
-
-        Tu peux écrire librement ce que tu veux faire.
-
-        Que veux-tu commencer par faire ?
+  <div id="chat-container">
+    <div class="message">
+      <p>Le monde évolue indépendamment de toi.</p>
+      <p>Tu peux écrire librement ce que tu veux faire.</p>
+      <p><strong>Que veux-tu commencer par faire ?</strong></p>
     </div>
+  </div>
 
-</div>
+  <div id="input-container">
+    <textarea id="decision-input" placeholder="Écris ta décision..."></textarea>
+    <button onclick="envoyerDecision()">Envoyer</button>
+  </div>
 
-<div class="input-area">
-    <div class="input-box">
-        <textarea id="input" placeholder="Écris ta décision..."></textarea>
-        <button onclick="sendMessage()">Envoyer</button>
-    </div>
-</div>
+  <script>
+    const SUPABASE_URL = "https://itowpzagxdnlgpuvjwcz.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_3amJfTkMnMt5ymkJyNoCBQ_e7qEaN79";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
+    const GAME_ID = 1; 
 
-function sendMessage() {
+    window.addEventListener('DOMContentLoaded', async () => {
+      await chargerPartie();
+    });
 
-    const input = document.getElementById("input");
-    const chat = document.getElementById("chat");
+    async function envoyerDecision() {
+      const input = document.getElementById('decision-input');
+      const texte = input.value.trim();
+      if (!texte) return;
 
-    const text = input.value.trim();
+      let { data: game } = await supabaseClient
+        .from('games')
+        .select('actions')
+        .eq('id', GAME_ID)
+        .maybeSingle();
 
-    if (!text) return;
+      let actionsActuelles = (game && game.actions) ? game.actions : [];
+      actionsActuelles.push(texte);
 
-    const userMessage = document.createElement("div");
-    userMessage.className = "message user";
-    userMessage.textContent = "Toi : " + text;
+      const { error } = await supabaseClient
+        .from('games')
+        .upsert({ id: GAME_ID, actions: actionsActuelles });
 
-    chat.appendChild(userMessage);
+      if (error) {
+        alert("Erreur Supabase : " + error.message);
+        console.error(error);
+      } else {
+        input.value = '';
+        await chargerPartie();
+      }
+    }
 
-    input.value = "";
+    async function chargerPartie() {
+      const container = document.getElementById('chat-container');
+      
+      let { data: game, error } = await supabaseClient
+        .from('games')
+        .select('actions')
+        .eq('id', GAME_ID)
+        .maybeSingle();
 
-    const response = document.createElement("div");
-    response.className = "message assistant";
+      if (error || !game || !game.actions) return;
 
-    response.textContent =
-        "Décision enregistrée.\n\n" +
-        "Le monde commence à réagir à ton action...\n\n" +
-        "(L'IA et la mémoire seront ajoutées ensuite.)";
+      container.innerHTML = `
+        <div class="message">
+          <p>Le monde évolue indépendamment de toi.</p>
+          <p>Tu peux écrire librement ce que tu veux faire.</p>
+          <p><strong>Que veux-tu commencer par faire ?</strong></p>
+        </div>
+      `;
 
-    chat.appendChild(response);
-
-    chat.scrollTop = chat.scrollHeight;
-}
-
-</script>
-
+      game.actions.forEach(action => {
+        const div = document.createElement('div');
+        div.className = 'message user-msg';
+        div.innerHTML = `<strong>Toi :</strong> ${action}`;
+        container.appendChild(div);
+      });
+    }
+  </script>
 </body>
 </html>
