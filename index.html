@@ -48,10 +48,11 @@
     .setup-box input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.95rem; }
     .setup-box button, .action-btn { padding: 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .setup-box button:hover, .action-btn:hover { background: #0369a1; }
+    .setup-box button:disabled, .action-btn:disabled, .option-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .options-grid { display: flex; flex-direction: column; gap: 8px; }
     .option-btn { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 12px 14px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 0.9rem; transition: 0.2s; font-weight: 500; }
-    .option-btn:hover { background: #334155; border-color: #38bdf8; }
+    .option-btn:hover:not(:disabled) { background: #334155; border-color: #38bdf8; }
 
     .custom-input-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #334155; padding-top: 10px; }
     .custom-input-group input { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.85rem; }
@@ -60,6 +61,7 @@
     .reset-btn:hover { background: #ef44441a; }
     
     .status-error { color: #f87171; font-size: 0.85rem; margin-top: 6px; }
+    .status-info { color: #38bdf8; font-size: 0.85rem; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -151,7 +153,7 @@
         
         <div class="custom-input-group">
           <input type="text" id="customAction" placeholder="Action personnalisée (soumise aux limites du réalisme)...">
-          <button class="action-btn" onclick="sendCustomAction()">Tenter l'action</button>
+          <button class="action-btn" id="sendBtn" onclick="sendCustomAction()">Tenter l'action</button>
         </div>
         <div id="errorMsg" class="status-error"></div>
       </div>
@@ -166,6 +168,7 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let history = [];
+    let isProcessing = false;
     
     let gameState = {
       mode: "Libre",
@@ -214,6 +217,12 @@ RÈGLES STRICTES DE GAMEPLAY :
       await supabaseClient.from('games').upsert({ id: GAME_ID, actions: history });
     }
 
+    function toggleControls(disabled) {
+      isProcessing = disabled;
+      document.getElementById('sendBtn').disabled = disabled;
+      document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = disabled);
+    }
+
     function render(options = []) {
       const logPanel = document.getElementById('logPanel');
       logPanel.innerHTML = history.map(h => `<div class="msg ${h.role}">${h.text}</div>`).join('');
@@ -237,6 +246,7 @@ RÈGLES STRICTES DE GAMEPLAY :
           const btn = document.createElement('button');
           btn.className = 'option-btn';
           btn.innerText = opt;
+          btn.disabled = isProcessing;
           btn.onclick = () => executeTurn(opt);
           optionsGrid.appendChild(btn);
         });
@@ -276,6 +286,7 @@ RÈGLES STRICTES DE GAMEPLAY :
     }
 
     async function sendCustomAction() {
+      if (isProcessing) return;
       const input = document.getElementById('customAction');
       const text = input.value.trim();
       if (!text) return;
@@ -283,15 +294,20 @@ RÈGLES STRICTES DE GAMEPLAY :
       await executeTurn(text);
     }
 
-    async function executeTurn(userAction) {
-      document.getElementById('errorMsg').innerText = '';
-      history.push({ role: "user", text: userAction });
-      render();
+    async function executeTurn(userAction, retries = 3) {
+      toggleControls(true);
+      const errorMsg = document.getElementById('errorMsg');
+      
+      if (retries === 3) {
+        errorMsg.innerText = '';
+        errorMsg.className = 'status-error';
+        history.push({ role: "user", text: userAction });
+        render();
+      }
 
       try {
         const prompt = `${SYSTEM_INSTRUCTION}\n\nÉtat actuel du joueur : ${JSON.stringify(gameState)}\nHistorique de la partie :\n${history.map(h => `${h.role}:${h.text}`).join('\n')}`;
 
-        // Utilisation du modèle gemini-3.6-flash préconisé par l'API
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -301,8 +317,11 @@ RÈGLES STRICTES DE GAMEPLAY :
         const data = await res.json();
         
         if (data.error) {
-          if (data.error.code === 429 || data.error.message.includes('quota')) {
-            throw new Error("Quota temporaire atteint. Patientez 30 secondes.");
+          if ((data.error.code === 429 || data.error.message.includes('quota')) && retries > 0) {
+            errorMsg.className = 'status-info';
+            errorMsg.innerText = `Serveur en cours d'attente... Nouvelle tentative automatique (${4 - retries}/3)...`;
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            return await executeTurn(userAction, retries - 1);
           }
           throw new Error(data.error.message);
         }
@@ -333,10 +352,14 @@ RÈGLES STRICTES DE GAMEPLAY :
         history.push({ role: "ai", text: parsed.narrative });
         await saveState();
 
+        errorMsg.innerText = '';
+        toggleControls(false);
         render(parsed.options || []);
 
       } catch (err) {
-        document.getElementById('errorMsg').innerText = err.message;
+        errorMsg.className = 'status-error';
+        errorMsg.innerText = err.message;
+        toggleControls(false);
       }
     }
 
@@ -347,6 +370,7 @@ RÈGLES STRICTES DE GAMEPLAY :
         await supabaseClient.from('games').delete().eq('id', GAME_ID);
         document.getElementById('setupArea').style.display = 'block';
         document.getElementById('gameControls').style.display = 'none';
+        toggleControls(false);
         init();
       }
     }
