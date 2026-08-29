@@ -5,7 +5,7 @@
   <title>Simulation AI</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f4f4f9; }
+    body { font-family: sans-serif; max-width: 650px; margin: 40px auto; padding: 0 20px; background: #f4f4f9; }
     #log { background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; min-height: 250px; margin-bottom: 20px; white-space: pre-wrap; }
     .user { font-weight: bold; color: #2b6cb0; margin-top: 10px; }
     .ai { color: #2d3748; margin-bottom: 10px; }
@@ -13,20 +13,20 @@
     input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
     button { padding: 10px 20px; background: #319795; color: white; border: none; border-radius: 4px; cursor: pointer; }
     button:disabled { background: #cbd5e0; }
-    .reset-btn { background: #e53e3e; margin-top: 10px; }
+    .reset-btn { background: #e53e3e; margin-top: 15px; }
   </style>
 </head>
 <body>
 
   <h1>Simulation IA</h1>
-  <div id="log">Chargement...</div>
+  <div id="log">Chargement de la partie...</div>
 
   <div class="input-area">
-    <input type="text" id="actionInput" placeholder="Tape ton choix ici...">
+    <input type="text" id="actionInput" placeholder="Écris ton choix ou ton action ici...">
     <button id="sendBtn" onclick="playTurn()">Envoyer</button>
   </div>
   
-  <button class="reset-btn" onclick="resetGame()">Réinitialiser / Nouvelle partie</button>
+  <button class="reset-btn" onclick="resetGame()">Recommencer une partie</button>
 
   <script>
     const SUPABASE_URL = "https://wzqvjndyyljhquxsmxae.supabase.co"; 
@@ -37,13 +37,15 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let history = [];
 
-    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'une simulation interactive. 
-    Au début, l'utilisateur va choisir soit un Personnage, soit un Pays/Continent.
-    Utilise son choix pour générer un thème captivant, poser le décor, créer les enjeux et lancer l'aventure.
-    Ensuite, réponds à chacune de ses actions de façon immersive et concise.`;
+    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'une simulation interactive en texte.
+RÈGLES IMPORTANTES :
+1. Au premier tour, le joueur te décrit son personnage OU son cadre de jeu (pays, ville, époque, détails historiques ou fantastiques).
+2. Utilise TOUS les détails fournis par le joueur (ex: "Japon en 1945", "Pirate de la mer des Caraïbes en 1715") pour installer le décor et l'ambiance exacte.
+3. Fais des réponses courtes (3 à 5 phrases max) pour garder un rythme de jeu très rapide.
+4. Termine toujours par une question directe ou une situation qui demande un choix au joueur.`;
 
     async function loadGame() {
-      const { data } = await supabaseClient
+      const { data, error } = await supabaseClient
         .from('games')
         .select('actions')
         .eq('id', GAME_ID)
@@ -54,11 +56,15 @@
       } else {
         history = [{ 
           role: "system", 
-          text: "🎮 Bienvenue dans la Simulation !\n\nPour commencer, choisis ton mode d'aventure :\n👉 Option 1 : Choisis un Personnage (ex: Un pirate, un détective, un roi...)\n👉 Option 2 : Choisis un Pays ou un Continent (ex: Le Japon, l'Europe médiévale, une île dans le Pacifique...)\n\nQue choisis-tu ?" 
+          text: "🎮 **Bienvenue dans la Simulation !**\n\nPour lancer l'aventure, choisis ton thème en donnant autant de détails que tu veux :\n\n👉 **Option 1 : Un Personnage** (ex: *Un détective privé à New York en 1930*, *Un mage noir banni*...)\n👉 **Option 2 : Un Lieu / Une Époque** (ex: *Le Japon en 1945*, *La France du Moyen Âge*, *Une station spatiale en 2150*...)\n\nQue décides-tu d'incarner ou d'explorer ?" 
         }];
-        await supabaseClient.from('games').upsert({ id: GAME_ID, actions: history });
+        await saveHistory();
       }
       render();
+    }
+
+    async function saveHistory() {
+      await supabaseClient.from('games').upsert({ id: GAME_ID, actions: history });
     }
 
     function render() {
@@ -68,6 +74,7 @@
         if (h.role === 'model' || h.role === 'system') return `<div class="ai">${h.text}</div>`;
         return '';
       }).join('');
+      log.scrollTop = log.scrollHeight;
     }
 
     async function playTurn() {
@@ -81,9 +88,10 @@
 
       history.push({ role: "user", text: text });
       render();
+      await saveHistory();
 
       try {
-        const prompt = SYSTEM_INSTRUCTION + "\n\nHistorique de la partie :\n" + 
+        const prompt = SYSTEM_INSTRUCTION + "\n\nHistorique :\n" + 
           history.map(h => `${h.role}: ${h.text}`).join('\n');
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -97,7 +105,8 @@
 
         const reply = data.candidates[0].content.parts[0].text;
         history.push({ role: "model", text: reply });
-        await supabaseClient.from('games').upsert({ id: GAME_ID, actions: history });
+        
+        await saveHistory();
         render();
       } catch (err) {
         alert("Erreur IA : " + err.message);
@@ -107,7 +116,7 @@
     }
 
     async function resetGame() {
-      if (confirm("Veux-tu vraiment recommencer une nouvelle partie ?")) {
+      if (confirm("Veux-tu réinitialiser et recommencer une nouvelle aventure ?")) {
         history = [];
         await supabaseClient.from('games').delete().eq('id', GAME_ID);
         loadGame();
