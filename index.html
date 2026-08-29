@@ -3,62 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation IA - Pixel RPG V4</title>
+  <title>Simulation IA - RPG Professionnel</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Police Pixel Retro Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <!-- Police propre, moderne et professionnelle -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg-color: #0f0f1b;
-      --panel-bg: #1a1a2e;
-      --border-color: #e94560;
-      --text-color: #f1f1f1;
-      --accent-color: #00fff5;
-      --hp-color: #ff2e63;
-      --xp-color: #ffb703;
-      --gold-color: #ffe600;
+      --bg-main: #0f172a;
+      --bg-panel: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --danger: #f43f5e;
+      --success: #10b981;
+      --warning: #f59e0b;
     }
 
     * { box-sizing: border-box; }
 
     body { 
-      font-family: 'VT323', monospace; 
-      max-width: 950px; 
+      font-family: 'Inter', sans-serif; 
+      max-width: 900px; 
       margin: 0 auto; 
-      padding: 20px; 
-      background: var(--bg-color); 
-      color: var(--text-color);
-      font-size: 1.25rem;
+      padding: 30px 20px; 
+      background: var(--bg-main); 
+      color: var(--text-main);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
     }
 
     h1 { 
-      font-family: 'Press Start 2P', cursive; 
-      text-align: center; 
-      color: var(--border-color); 
-      font-size: 1.5rem;
-      text-shadow: 3px 3px #000;
-      margin-bottom: 5px;
+      font-weight: 600;
+      color: var(--text-main); 
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 5px 0;
     }
-
+    
     #hero-title { 
-      text-align: center; 
-      color: var(--accent-color); 
-      margin-bottom: 15px; 
-      font-size: 1.3rem;
+      color: var(--text-muted); 
+      font-size: 0.9rem;
     }
     
     #quest-banner { 
-      background: #16213e; 
-      color: #fff; 
-      padding: 12px 15px; 
-      border: 2px solid var(--border-color); 
-      box-shadow: 4px 4px 0px #000;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.75rem;
+      background: var(--bg-panel); 
+      color: var(--text-main); 
+      padding: 12px 18px; 
+      border: 1px solid var(--border-color); 
+      border-radius: 6px;
+      font-size: 0.9rem;
       margin-bottom: 20px; 
-      text-align: center; 
-      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .game-container { 
@@ -73,192 +80,211 @@
     
     #log { 
       flex: 2; 
-      background: var(--panel-bg); 
-      border: 3px solid #0f3460; 
-      box-shadow: 5px 5px 0px #000;
-      padding: 15px; 
-      min-height: 380px; 
-      max-height: 480px; 
+      background: var(--bg-panel); 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px;
+      padding: 20px; 
+      min-height: 400px; 
+      max-height: 500px; 
       overflow-y: auto; 
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
     }
     
     #stats-panel { 
       flex: 1; 
-      background: var(--panel-bg); 
-      border: 3px solid #0f3460; 
-      box-shadow: 5px 5px 0px #000;
-      padding: 15px; 
+      background: var(--bg-panel); 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px;
+      padding: 20px; 
       height: fit-content; 
     }
 
     .panel-header {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.8rem;
-      color: var(--accent-color);
-      border-bottom: 2px solid #0f3460;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
       padding-bottom: 8px;
       margin-top: 0;
       margin-bottom: 15px;
     }
     
-    .stat-box { margin-bottom: 12px; }
-    .stat-title { font-weight: bold; color: #8e9aaf; font-size: 1rem; text-transform: uppercase; }
-    .stat-value { font-size: 1.3rem; font-weight: bold; color: var(--accent-color); }
+    .stat-box { margin-bottom: 14px; }
+    .stat-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .stat-value { font-size: 1.05rem; font-weight: 600; color: var(--text-main); }
     
-    /* Barres de Stat */
+    /* Barres de progression élégantes */
     .bar-outer {
-      background: #000;
-      border: 1px solid #444;
-      height: 16px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      height: 8px;
       width: 100%;
-      border-radius: 2px;
-      margin-top: 4px;
+      border-radius: 4px;
+      margin-top: 6px;
       overflow: hidden;
     }
-    .bar-inner-hp { background: var(--hp-color); height: 100%; width: 100%; transition: width 0.3s; }
-    .bar-inner-xp { background: var(--xp-color); height: 100%; width: 0%; transition: width 0.3s; }
+    .bar-inner-hp { background: var(--success); height: 100%; width: 100%; transition: width 0.3s; }
+    .bar-inner-xp { background: var(--warning); height: 100%; width: 0%; transition: width 0.3s; }
 
-    .user { color: var(--accent-color); margin-top: 12px; border-top: 1px dashed #0f3460; padding-top: 8px; font-weight: bold; }
-    .ai { color: #e2e8f0; margin-bottom: 12px; line-height: 1.4; }
-    .dice-tag { color: var(--gold-color); font-weight: bold; background: #000; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+    .user { color: var(--accent); margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px; font-weight: 500; }
+    .ai { color: #cbd5e1; margin-bottom: 15px; line-height: 1.6; }
+    .dice-tag { color: var(--warning); font-weight: 500; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; font-size: 0.8rem; }
 
-    .options-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+    .options-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
     
     .option-btn { 
-      padding: 12px 15px; 
-      background: #0f3460; 
-      color: #fff; 
-      border: 2px solid var(--accent-color); 
-      box-shadow: 3px 3px 0px #000;
+      padding: 12px 16px; 
+      background: var(--bg-panel); 
+      color: var(--text-main); 
+      border: 1px solid var(--border-color); 
+      border-radius: 6px;
       cursor: pointer; 
       text-align: left; 
-      font-family: 'VT323', monospace;
-      font-size: 1.2rem; 
-      transition: all 0.1s; 
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; 
+      transition: all 0.2s; 
     }
     .option-btn:hover:not(:disabled) { 
-      background: var(--accent-color); 
-      color: #000; 
-      transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0px #000;
+      background: #273548; 
+      border-color: var(--accent);
     }
-    .option-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .option-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .input-card { 
-      background: var(--panel-bg); 
-      border: 3px solid #0f3460; 
-      box-shadow: 5px 5px 0px #000;
-      padding: 15px; 
-      margin-bottom: 15px; 
+      background: var(--bg-panel); 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px;
+      padding: 20px; 
+      margin-bottom: 20px; 
     }
 
-    .difficulty-select { display: flex; gap: 10px; margin-bottom: 12px; }
+    .difficulty-select { display: flex; gap: 10px; margin-bottom: 15px; }
     .diff-btn { 
       flex: 1; 
-      padding: 8px; 
-      border: 2px solid #4a5568; 
-      background: #000; 
-      color: white; 
+      padding: 10px; 
+      border: 1px solid var(--border-color); 
+      background: var(--bg-main); 
+      color: var(--text-muted); 
+      border-radius: 6px;
       cursor: pointer; 
-      font-family: 'VT323', monospace;
-      font-size: 1.1rem; 
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem; 
+      transition: 0.2s;
     }
-    .diff-btn.active { background: var(--border-color); border-color: #fff; }
+    .diff-btn.active { background: #334155; color: var(--text-main); border-color: var(--accent); }
     
     .input-group { display: flex; gap: 10px; }
     input { 
       flex: 1; 
-      padding: 10px; 
-      border: 2px solid #0f3460; 
-      background: #000; 
-      color: #fff; 
-      font-family: 'VT323', monospace;
-      font-size: 1.2rem;
+      padding: 12px; 
+      border: 1px solid var(--border-color); 
+      background: var(--bg-main); 
+      color: var(--text-main); 
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
     }
+    input:focus { outline: none; border-color: var(--accent); }
+
     button.start-btn { 
-      padding: 10px 20px; 
-      background: var(--border-color); 
-      color: white; 
-      border: 2px solid #fff; 
-      box-shadow: 3px 3px 0px #000;
+      padding: 12px 24px; 
+      background: var(--accent); 
+      color: #0f172a; 
+      border: none; 
+      border-radius: 6px;
       cursor: pointer; 
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      transition: 0.2s;
     }
+    button.start-btn:hover { background: var(--accent-hover); }
 
     .heal-btn { 
-      background: #2a9d8f; 
-      color: white; 
-      border: none; 
+      background: rgba(16, 185, 129, 0.15); 
+      color: var(--success); 
+      border: 1px solid rgba(16, 185, 129, 0.3); 
       padding: 2px 6px; 
+      border-radius: 4px;
       cursor: pointer; 
-      font-family: 'VT323', monospace;
-      font-size: 1rem; 
-      margin-left: 5px; 
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem; 
+      margin-left: 6px; 
+      transition: 0.2s;
     }
+    .heal-btn:hover { background: rgba(16, 185, 129, 0.3); }
 
-    .action-bar { display: flex; gap: 10px; margin-top: 15px; }
-    .save-btn { background: #16213e; flex: 1; padding: 10px; color: white; border: 2px solid var(--accent-color); cursor: pointer; font-family: 'VT323', monospace; font-size: 1.1rem; }
-    .reset-btn { background: #7209b7; flex: 1; padding: 10px; color: white; border: 2px solid #f72585; cursor: pointer; font-family: 'VT323', monospace; font-size: 1.1rem; }
+    .action-bar { display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+    .action-btn { background: var(--bg-panel); flex: 1; padding: 10px; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500; transition: 0.2s; }
+    .action-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
+    .reset-btn:hover { color: var(--danger); border-color: var(--danger); }
 
-    #status-msg { margin-top: 10px; padding: 10px; border-radius: 4px; font-size: 1.1rem; text-align: center; display: none; }
-    .status-error { background: #9b1d20; color: #f8d7da; border: 1px solid #f5c6cb; }
-    .status-info { background: #155d27; color: #d4edda; border: 1px solid #c3e6cb; }
+    #status-msg { margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 0.85rem; text-align: center; display: none; }
+    .status-error { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); }
+    .status-info { background: rgba(56, 189, 248, 0.1); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.2); }
   </style>
 </head>
 <body>
 
-  <h1>SIMULATION IA</h1>
-  <div id="hero-title">-- Mode JDR Textuel --</div>
-  <div id="quest-banner">🎯 OBJECTIF : Créez votre univers pour démarrer</div>
+  <header>
+    <h1>SIMULATION INTERACTIVE</h1>
+    <div id="hero-title">Environnement de simulation textuelle assisté par IA</div>
+  </header>
+
+  <div id="quest-banner">
+    <span>🎯</span> <strong>Objectif actuel :</strong> <span id="quest-text">Initialisation de la session...</span>
+  </div>
 
   <div class="game-container">
-    <div id="log">Chargement de la matrice...</div>
+    <div id="log">Chargement du journal système...</div>
     
     <div id="stats-panel">
-      <h3 class="panel-header">STATISTIQUES</h3>
+      <h3 class="panel-header">Paramètres & Statistiques</h3>
       
       <div class="stat-box">
-        <div class="stat-title">Niveau & XP</div>
-        <div class="stat-value" id="lvlDisplay" style="color:var(--xp-color);">Niv. 1</div>
+        <div class="stat-title">Progression</div>
+        <div class="stat-value" id="lvlDisplay" style="color:var(--warning);">Niv. 1</div>
         <div class="bar-outer"><div id="xpBar" class="bar-inner-xp"></div></div>
       </div>
 
       <div class="stat-box">
-        <div class="stat-title">Points de Vie</div>
+        <div class="stat-title">Intégrité (PV)</div>
         <div class="stat-value" id="hpDisplay">100 / 100</div>
         <div class="bar-outer"><div id="hpBar" class="bar-inner-hp"></div></div>
       </div>
 
       <div class="stat-box">
         <div class="stat-title">Équipement</div>
-        <div id="weaponDisplay" style="color:var(--accent-color);">⚔️ Mains nues</div>
-        <div id="armorDisplay" style="color:var(--accent-color);">🛡️ Vêtements simples</div>
+        <div id="weaponDisplay" style="color:var(--text-main); font-size: 0.9rem;">Mains nues</div>
+        <div id="armorDisplay" style="color:var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Vêtements simples</div>
       </div>
 
       <div class="stat-box">
-        <div class="stat-title">Bourse</div>
-        <div class="stat-value" id="goldDisplay" style="color:var(--gold-color);">🪙 0 Pièces</div>
+        <div class="stat-title">Ressources</div>
+        <div class="stat-value" id="goldDisplay" style="color:var(--warning);">0 Unités</div>
       </div>
 
       <div class="stat-box">
         <div class="stat-title">Inventaire</div>
-        <div id="inventoryDisplay" style="color:#cbd5e0;">Aucun objet</div>
+        <div id="inventoryDisplay" style="color:var(--text-muted); font-size: 0.85rem;">Vide</div>
       </div>
     </div>
   </div>
 
   <div class="input-card" id="startInputArea">
-    <div style="margin-bottom: 8px; color: var(--accent-color);">1. Difficulté du Monde :</div>
+    <div style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em;">1. Sélection du niveau de difficulté :</div>
     <div class="difficulty-select">
       <button class="diff-btn" onclick="setDifficulty('Facile', this)">Facile</button>
-      <button class="diff-btn active" onclick="setDifficulty('Moyen', this)">Moyen</button>
-      <button class="diff-btn" onclick="setDifficulty('Hardcore', this)">Hardcore</button>
+      <button class="diff-btn active" onclick="setDifficulty('Moyen', this)">Standard</button>
+      <button class="diff-btn" onclick="setDifficulty('Hardcore', this)">Expert / Hardcore</button>
     </div>
-    <div style="margin-bottom: 8px; color: var(--accent-color);">2. Écrivez votre départ d'aventure :</div>
+    <div style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em;">2. Définition du contexte initial :</div>
     <div class="input-group">
-      <input type="text" id="actionInput" placeholder="Ex: Un cyber-détective à Neo-Tokyo en 2099...">
-      <button class="start-btn" onclick="submitCustomInput()">LANCER</button>
+      <input type="text" id="actionInput" placeholder="Ex: Enquêteur cybernétique à Néo-Tokyo, 2142...">
+      <button class="start-btn" onclick="submitCustomInput()">Démarrer</button>
     </div>
   </div>
 
@@ -267,10 +293,10 @@
   <div id="status-msg"></div>
 
   <div class="action-bar">
-    <button class="save-btn" onclick="exportSave()">💾 Exporter (.json)</button>
-    <button class="save-btn" onclick="document.getElementById('importFile').click()">📂 Importer (.json)</button>
+    <button class="action-btn" onclick="exportSave()">Exporter la partie (.json)</button>
+    <button class="action-btn" onclick="document.getElementById('importFile').click()">Importer une sauvegarde</button>
     <input type="file" id="importFile" style="display:none" onchange="importSave(event)" accept=".json">
-    <button class="reset-btn" onclick="resetGame()">🗑️ Recommencer</button>
+    <button class="action-btn reset-btn" onclick="resetGame()">Réinitialiser</button>
   </div>
 
   <script>
@@ -286,7 +312,7 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let history = [];
-    let gameSummary = ""; // Mémoire condensée du passé
+    let gameSummary = "";
     let selectedDifficulty = "Moyen";
     let isProcessing = false;
     
@@ -301,19 +327,19 @@
       weapon: "Mains nues", 
       armor: "Vêtements simples", 
       inventory: [],
-      quest: "Commencer l'aventure"
+      quest: "En attente de paramètres initiaux..."
     };
 
-    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'un JDR interactif.
+    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'une simulation narrative textuelle de type RPG. Adopte un ton mature, littéraire, sérieux et professionnel (pas de familiarités excessives ni de design enfantin).
 Consignes :
-1. Adapte la sévérité au niveau de difficulté (Facile/Moyen/Hardcore).
+1. Adapte la difficulté (Facile, Standard, Expert).
 2. Attribue entre 10 et 30 XP par tour.
 3. Réponds STRICTEMENT en JSON sans balises markdown :
 {
-  "hero_name": "Nom du héros",
+  "hero_name": "Nom du personnage",
   "quest": "Description courte de l'objectif actuel",
-  "narrative": "Suite du récit (3-4 phrases)",
-  "dice_result": "Résultat dé (ex: 'Dé : 14/20 - Succès') ou null",
+  "narrative": "Suite du récit de manière immersive et mature (3-4 phrases)",
+  "dice_result": "Résultat de l'analyse (ex: 'Évaluation : 14/20 - Succès') ou null",
   "xp_gain": 15,
   "hp_change": 0,
   "gold_change": 0,
@@ -321,7 +347,7 @@ Consignes :
   "armor": "Nom d'armure ou null",
   "item_add": "Nom d'objet ou null",
   "item_remove": "Nom d'objet ou null",
-  "options": ["Choix A", "Choix B", "Choix C"]
+  "options": ["Option 1", "Option 2", "Option 3"]
 }`;
 
     function setDifficulty(diff, el) {
@@ -351,7 +377,7 @@ Consignes :
         document.getElementById('optionsArea').style.display = 'flex';
         render();
       } else {
-        history = [{ role: "system", text: "👾 **BIENVENUE DANS LA SIMULATION !**\n\nChoisissez votre difficulté et écrivez votre contexte pour commencer." }];
+        history = [{ role: "system", text: "[SYSTÈME] Initialisation de la simulation. Définissez vos paramètres et votre scénario ci-dessous." }];
         await saveHistory();
         render();
       }
@@ -372,7 +398,7 @@ Consignes :
         playerStats.level++;
         playerStats.maxHp += 20;
         playerStats.hp = playerStats.maxHp;
-        showStatus(`🎉 MONTÉE DE NIVEAU ! Vous êtes Niveau ${playerStats.level} ! (+20 PV Max)`, "info");
+        showStatus(`Montée de niveau validée : Niveau ${playerStats.level} atteint (Intégrité maximale augmentée).`, "info");
       }
     }
 
@@ -383,36 +409,36 @@ Consignes :
         playerStats.hp = Math.min(playerStats.maxHp, playerStats.hp + 35);
         saveHistory();
         render();
-        showStatus(`Soin appliqué avec ${itemName} (+35 PV)`, "info");
+        showStatus(`Ressource utilisée : ${itemName} (+35 PV)`, "info");
       }
     }
 
     function updateStatsDisplay() {
-      document.getElementById('hero-title').innerText = playerStats.heroName !== "Inconnu" ? `Aventure de ${playerStats.heroName} [${playerStats.difficulty}]` : "-- Mode JDR Textuel --";
-      document.getElementById('quest-banner').innerText = `🎯 OBJECTIF : ${playerStats.quest}`;
+      document.getElementById('hero-title').innerText = playerStats.heroName !== "Inconnu" ? `Session active : ${playerStats.heroName} [Mode ${playerStats.difficulty}]` : "Environnement de simulation textuelle assisté par IA";
+      document.getElementById('quest-text').innerText = playerStats.quest;
       
       const xpNeeded = playerStats.level * 100;
       document.getElementById('lvlDisplay').innerText = `Niv. ${playerStats.level} (${playerStats.xp}/${xpNeeded} XP)`;
       document.getElementById('xpBar').style.width = `${Math.min(100, (playerStats.xp / xpNeeded) * 100)}%`;
 
-      document.getElementById('hpDisplay').innerText = `${playerStats.hp} / ${playerStats.maxHp} PV`;
+      document.getElementById('hpDisplay').innerText = `${playerStats.hp} / ${playerStats.maxHp}`;
       const hpPct = Math.max(0, (playerStats.hp / playerStats.maxHp) * 100);
       document.getElementById('hpBar').style.width = `${hpPct}%`;
 
-      document.getElementById('weaponDisplay').innerText = `⚔️ ${playerStats.weapon}`;
-      document.getElementById('armorDisplay').innerText = `🛡️ ${playerStats.armor}`;
-      document.getElementById('goldDisplay').innerText = `🪙 ${playerStats.gold} Pièces`;
+      document.getElementById('weaponDisplay').innerText = playerStats.weapon;
+      document.getElementById('armorDisplay').innerText = playerStats.armor;
+      document.getElementById('goldDisplay').innerText = `${playerStats.gold} Unités`;
 
       const invContainer = document.getElementById('inventoryDisplay');
       if (playerStats.inventory && playerStats.inventory.length > 0) {
         invContainer.innerHTML = playerStats.inventory.map(item => {
-          if (item.toLowerCase().includes('potion') || item.toLowerCase().includes('soin') || item.toLowerCase().includes('pomme')) {
-            return `📦 ${item} <button class="heal-btn" onclick="usePotion('${item}')">Utiliser</button>`;
+          if (item.toLowerCase().includes('potion') || item.toLowerCase().includes('soin') || item.toLowerCase().includes('pomme') || item.toLowerCase().includes('trousse')) {
+            return `${item} <button class="heal-btn" onclick="usePotion('${item}')">Consommer</button>`;
           }
-          return `📦 ${item}`;
+          return `${item}`;
         }).join('<br>');
       } else {
-        invContainer.innerText = 'Aucun objet';
+        invContainer.innerText = 'Vide';
       }
     }
 
@@ -421,7 +447,7 @@ Consignes :
       log.innerHTML = history.map(h => {
         if (h.role === 'user') return `<div class="user">> ${h.text}</div>`;
         if (h.role === 'model' || h.role === 'system') {
-          let text = h.text.replace(/🎲 \*(.*?)\*/, '<span class="dice-tag">🎲 $1</span>');
+          let text = h.text.replace(/🎲 \*(.*?)\*/, '<span class="dice-tag">$1</span>');
           return `<div class="ai">${text}</div>`;
         }
         return '';
@@ -432,17 +458,17 @@ Consignes :
 
       const optionsArea = document.getElementById('optionsArea');
       optionsArea.innerHTML = '';
-      if (lastOptions.length > 0 && playerStats.hp > 0) {
+      if (lastOptions.length > intVal = 0 && playerStats.hp > 0) {
         lastOptions.forEach(opt => {
           const btn = document.createElement('button');
           btn.className = 'option-btn';
-          btn.innerText = `> ${opt}`;
+          btn.innerText = `→ ${opt}`;
           btn.disabled = isProcessing;
           btn.onclick = () => selectOption(opt);
           optionsArea.appendChild(btn);
         });
       } else if (playerStats.hp <= 0) {
-        optionsArea.innerHTML = `<div style="color:var(--hp-color); font-weight:bold; text-align:center; padding:12px; background:#000; border:2px solid var(--hp-color);">💀 VOTRE HÉROS EST MORT — Recommencez une partie.</div>`;
+        optionsArea.innerHTML = `<div style="color:var(--danger); font-weight:600; text-align:center; padding:15px; background:var(--bg-panel); border:1px solid var(--danger); border-radius:6px;">[CRITIQUE] Intégrité vitale compromise — Session terminée. Veuillez réinitialiser.</div>`;
       }
     }
 
@@ -453,14 +479,14 @@ Consignes :
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: "Fais un résumé ultra-court (3 phrases max) des événements passés pour la mémoire du jeu :\n" + oldEvents }] }] })
+            body: JSON.stringify({ contents: [{ parts: [{ text: "Résume de manière concise et professionnelle les événements passés pour la mémoire du système :\n" + oldEvents }] }] })
           });
           const data = await res.json();
           if (data.candidates && data.candidates[0]) {
-            gameSummary = "Résumé du passé : " + data.candidates[0].content.parts[0].text;
+            gameSummary = "Synthèse contextuelle : " + data.candidates[0].content.parts[0].text;
           }
         } catch (e) {
-          console.log("Erreur résumé", e);
+          console.error("Erreur de synthèse", e);
         }
       }
     }
@@ -485,18 +511,16 @@ Consignes :
       hideStatus();
       
       const diceRoll = Math.floor(Math.random() * 20) + 1;
-      const diceText = `[Lancer de dé : ${diceRoll}/20]`;
+      const diceText = `[Évaluation algorithmique : ${diceRoll}/20]`;
 
       history.push({ role: "user", text: `${userChoice} ${diceText}` });
       render();
       await saveHistory();
 
-      // Résumé automatique si l'historique s'allonge
       await summarizeOldHistory();
 
-      // Conserver les 6 derniers messages + le résumé
       const recentHistory = history.slice(-6);
-      let promptContext = SYSTEM_INSTRUCTION + "\n\nStats Joueur : " + JSON.stringify(playerStats);
+      let promptContext = SYSTEM_INSTRUCTION + "\n\nParamètres Actuels : " + JSON.stringify(playerStats);
       if (gameSummary) promptContext += "\n\n" + gameSummary;
       promptContext += "\n\nHistorique Récent :\n" + recentHistory.map(h => `${h.role}: ${h.text}`).join('\n');
 
@@ -546,14 +570,14 @@ Consignes :
         setTimeout(() => {
           isProcessing = false;
           render(parsed.options || []);
-        }, 1500);
+        }, 1200);
 
       } catch (err) {
         isProcessing = false;
         if (err.message === "QUOTA_EXCEEDED") {
-          showStatus("⏳ Pause de l'IA (Quota atteint). Veuillez attendre 10 secondes puis recliquer.", "error");
+          showStatus("Attention : Limite de requêtes atteinte. Veuillez patienter 10 secondes avant de continuer.", "error");
         } else {
-          showStatus("Erreur : " + err.message, "error");
+          showStatus("Erreur système : " + err.message, "error");
         }
       }
     }
@@ -564,7 +588,7 @@ Consignes :
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `RPG_Save_${playerStats.heroName}_Niv${playerStats.level}.json`;
+      a.download = `Session_${playerStats.heroName}_Niv${playerStats.level}.json`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -584,17 +608,17 @@ Consignes :
             document.getElementById('startInputArea').style.display = 'none';
             document.getElementById('optionsArea').style.display = 'flex';
             render();
-            showStatus("✅ Sauvegarde chargée avec succès !", "info");
+            showStatus("Sauvegarde importée avec succès.", "info");
           }
         } catch (err) {
-          showStatus("Fichier de sauvegarde invalide.", "error");
+          showStatus("Échec de l'importation : format de fichier invalide.", "error");
         }
       };
       reader.readAsText(file);
     }
 
     async function resetGame() {
-      if (confirm("Voulez-vous réinitialiser et recommencer une nouvelle aventure ?")) {
+      if (confirm("Voulez-vous effacer la session en cours et réinitialiser l'environnement ?")) {
         history = [];
         gameSummary = "";
         playerStats = { 
@@ -608,7 +632,7 @@ Consignes :
           weapon: "Mains nues", 
           armor: "Vêtements simples", 
           inventory: [],
-          quest: "Commencer l'aventure"
+          quest: "En attente de paramètres initiaux..."
         };
         await supabaseClient.from('games').delete().eq('id', GAME_ID);
         document.getElementById('startInputArea').style.display = 'block';
