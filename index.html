@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation AI - Choix & Modes Stratégiques</title>
+  <title>Simulation Interactive AI</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,7 +37,6 @@
 
     .controls-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
     
-    /* Sélection des modes */
     .mode-selection-title { font-size: 1rem; color: #38bdf8; font-weight: 600; margin-bottom: 12px; }
     .modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
     .mode-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px; text-align: left; cursor: pointer; transition: 0.2s; }
@@ -98,7 +97,7 @@
 
         <div class="stat-group">
           <div class="stat-label">Capital / Budget</div>
-          <div class="stat-value" id="goldVal" style="color:#facc15;">1 000 €</div>
+          <div class="stat-value" id="goldVal" style="color:#facc15;">0 €</div>
         </div>
 
         <div class="stat-group">
@@ -139,7 +138,7 @@
         </div>
 
         <div class="setup-box" style="border-top:1px solid #334155; padding-top:12px;">
-          <label style="font-size:0.85rem; color:#94a3b8;">Ou créez votre propre contexte personnalisée :</label>
+          <label style="font-size:0.85rem; color:#94a3b8;">Ou créez votre propre contexte personnalisé :</label>
           <input type="text" id="initialContext" placeholder="Ex: Détective privé à Londres en 1920 avec un revolver et 50£...">
           <button onclick="startCustomSimulation()">Lancer en mode sur-mesure</button>
         </div>
@@ -183,10 +182,10 @@
     const SYSTEM_INSTRUCTION = `Tu es le moteur de jeu de rôle et de simulation stratégique.
 RÈGLES STRICTES DE GAMEPLAY :
 1. Propose TOUJOURS 3 à 4 CHOIX FERMÉS (Option A, B, C, D) réalistes, pertinents et stratégiques.
-2. Si le joueur fait une action libre hors-limites, irréaliste ou absurde (ex: voler dans l'air, pouvoirs magiques, devenir millionnaire instantanément) :
-   - Tu DOIS la faire échouer ou la bloquer de façon réaliste et punitive dans le récit. Pas de capacités divines.
-3. Respecte la logique du monde (physique, argent, conséquences sociales).
-4. Réponds STRICTEMENT et UNIQUEMENT en format JSON valide (aucun texte autour, pas de balises markdown) :
+2. Si le joueur fait une action libre hors-limites ou absurde (ex: acheter une voiture de luxe sans l'argent nécessaire, voler dans les airs, magie dans un monde réel) :
+   - Fais échouer ou refuse l'action de façon logique et punitive dans le récit. Pas de pouvoir magique ni de richesses magiques.
+3. Respecte STRICTEMENT le budget du joueur. Si son budget est de 5000€ et qu'il veut acheter une Ferrari, explique lui logiquement qu'il n'en a pas les moyens.
+4. Réponds STRICTEMENT en format JSON valide (aucun autre texte) :
 {
   "quest": "Description de l'objectif actuel",
   "narrative": "Texte de narration immersif (3 à 5 phrases)",
@@ -246,10 +245,19 @@ RÈGLES STRICTES DE GAMEPLAY :
 
     function selectMode(modeType) {
       let context = "";
-      if (modeType === 'survie') context = "Mode Survie : Seul dans une forêt hostile après une catastrophe, avec un couteau et 50€.";
-      else if (modeType === 'guerre') context = "Mode Guerre : Commandant d'une petite escouade de reconnaissance en zone de conflit armé.";
-      else if (modeType === 'business') context = "Mode Business : Jeune entrepreneur ouvrant sa startup avec 5 000€ d'épargne à Paris.";
-      else if (modeType === 'crime') context = "Mode Crime : Petit membre d'un réseau clandestin cherchant à se faire un nom en ville.";
+      if (modeType === 'survie') {
+        context = "Mode Survie : Seul dans une forêt hostile après une catastrophe, avec un couteau et 50€.";
+        gameState.resources = 50;
+      } else if (modeType === 'guerre') {
+        context = "Mode Guerre : Commandant d'une petite escouade de reconnaissance en zone de conflit armé.";
+        gameState.resources = 500;
+      } else if (modeType === 'business') {
+        context = "Mode Business : Jeune entrepreneur ouvrant sa startup avec 5 000€ d'épargne à Paris.";
+        gameState.resources = 5000;
+      } else if (modeType === 'crime') {
+        context = "Mode Crime : Petit membre d'un réseau clandestin cherchant à se faire un nom en ville.";
+        gameState.resources = 1200;
+      }
       
       gameState.mode = modeType;
       launchGame(context);
@@ -283,7 +291,8 @@ RÈGLES STRICTES DE GAMEPLAY :
       try {
         const prompt = `${SYSTEM_INSTRUCTION}\n\nÉtat actuel du joueur : ${JSON.stringify(gameState)}\nHistorique de la partie :\n${history.map(h => `${h.role}:${h.text}`).join('\n')}`;
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        // Utilisation du modèle stable gemini-1.5-flash
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -293,7 +302,7 @@ RÈGLES STRICTES DE GAMEPLAY :
         
         if (data.error) {
           if (data.error.code === 429 || data.error.message.includes('quota')) {
-            throw new Error("Quota d'appels temporairement dépassé. Veuillez patienter ~30 secondes.");
+            throw new Error("Quota temporaire atteint. Patientez 30 secondes.");
           }
           throw new Error(data.error.message);
         }
