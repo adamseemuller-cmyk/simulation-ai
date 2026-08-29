@@ -2,50 +2,99 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Simulation AI</title>
+  <title>Simulation AI - Hardcore RPG</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: sans-serif; max-width: 650px; margin: 40px auto; padding: 0 20px; background: #f4f4f9; }
-    #log { background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; min-height: 250px; margin-bottom: 20px; white-space: pre-wrap; }
-    .user { font-weight: bold; color: #2b6cb0; margin-top: 10px; }
-    .ai { color: #2d3748; margin-bottom: 10px; }
-    .input-area { display: flex; gap: 10px; }
-    input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    button { padding: 10px 20px; background: #319795; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:disabled { background: #cbd5e0; }
-    .reset-btn { background: #e53e3e; margin-top: 15px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px; background: #1a202c; color: #e2e8f0; }
+    h1 { text-align: center; color: #e53e3e; }
+    
+    /* Layout principal */
+    .game-container { display: flex; gap: 20px; margin-bottom: 20px; }
+    #log { flex: 2; background: #2d3748; border: 1px solid #4a5568; padding: 15px; border-radius: 8px; min-height: 350px; max-height: 450px; overflow-y: auto; white-space: pre-wrap; }
+    
+    /* Fiche de personnage */
+    #stats-panel { flex: 1; background: #2d3748; border: 1px solid #4a5568; padding: 15px; border-radius: 8px; height: fit-content; }
+    .stat-box { margin-bottom: 15px; }
+    .stat-title { font-weight: bold; color: #cbd5e0; font-size: 0.9em; text-transform: uppercase; }
+    .stat-value { font-size: 1.2em; font-weight: bold; color: #48bb78; }
+    .hp-danger { color: #f56565 !important; }
+    
+    /* Intérieurs des messages */
+    .user { font-weight: bold; color: #63b3ed; margin-top: 10px; border-top: 1px dashed #4a5568; padding-top: 5px; }
+    .ai { color: #e2e8f0; margin-bottom: 10px; line-height: 1.5; }
+    
+    /* Zone de choix */
+    .options-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+    .option-btn { padding: 12px; background: #319795; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.95em; transition: 0.2s; }
+    .option-btn:hover { background: #2c7a7b; }
+    .option-btn:disabled { background: #4a5568; cursor: not-allowed; }
+    
+    /* Zone de départ texte */
+    .input-area { display: flex; gap: 10px; margin-bottom: 15px; }
+    input { flex: 1; padding: 12px; border: 1px solid #4a5568; background: #2d3748; color: white; border-radius: 6px; }
+    button.start-btn { padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    
+    .reset-btn { background: #718096; width: 100%; padding: 10px; color: white; border: none; border-radius: 6px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <h1>Simulation IA</h1>
-  <div id="log">Chargement de la partie...</div>
+  <h1>Simulation IA — Mode Hardcore</h1>
 
-  <div class="input-area">
-    <input type="text" id="actionInput" placeholder="Écris ton choix ou ton action ici...">
-    <button id="sendBtn" onclick="playTurn()">Envoyer</button>
+  <div class="game-container">
+    <div id="log">Chargement...</div>
+    
+    <div id="stats-panel">
+      <h3>Fiche de Joueur</h3>
+      <div class="stat-box">
+        <div class="stat-title">Points de Vie (PV)</div>
+        <div class="stat-value" id="hpDisplay">100 / 100</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Pièces d'or</div>
+        <div class="stat-value" id="goldDisplay" style="color:#ecc94b;">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Inventaire</div>
+        <div id="inventoryDisplay" style="font-size:0.9em; color:#e2e8f0;">Aucun objet</div>
+      </div>
+    </div>
   </div>
-  
+
+  <!-- Saisie initiale -->
+  <div class="input-area" id="startInputArea">
+    <input type="text" id="actionInput" placeholder="Ex: Un pirate aux Caraïbes en 1715, ou Le Japon en 1945...">
+    <button class="start-btn" id="sendBtn" onclick="submitCustomInput()">Lancer la partie</button>
+  </div>
+
+  <!-- Choix multiples (Masqué au début) -->
+  <div class="options-area" id="optionsArea" style="display:none;"></div>
+
   <button class="reset-btn" onclick="resetGame()">Recommencer une partie</button>
 
   <script>
     const SUPABASE_URL = "https://wzqvjndyyljhquxsmxae.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cXZqbmR5eWxqaHF1eHNteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNTA2MjEsImV4cCI6MjA1NTkyNjYyMX0.9G_M3wF59z7O-q1xW2J2x5O2lY6f4K1c"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cXZqbmR5eWxqaHF1xHNteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNTA2MjEsImV4cCI6MjA1NTkyNjYyMX0.9G_M3wF59z7O-q1xW2J2x5O2lY6f4K1c"; 
     const GEMINI_API_KEY = "AQ.Ab8RN6LQAfPLUYckLMS70XIGVmjLJYRcRTeeqyt3s7foctjBYg";
     const GAME_ID = "11111111-1111-1111-1111-111111111111";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let history = [];
+    let playerStats = { hp: 100, gold: 0, inventory: [] };
 
-    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'une simulation interactive en texte.
-RÈGLES IMPORTANTES :
-1. Au premier tour, le joueur te décrit son personnage OU son cadre de jeu (pays, ville, époque, détails historiques ou fantastiques).
-2. Utilise TOUS les détails fournis par le joueur (ex: "Japon en 1945", "Pirate de la mer des Caraïbes en 1715") pour installer le décor et l'ambiance exacte.
-3. Fais des réponses courtes (3 à 5 phrases max) pour garder un rythme de jeu très rapide.
-4. Termine toujours par une question directe ou une situation qui demande un choix au joueur.`;
+    const SYSTEM_INSTRUCTION = `Tu es le Maître du Jeu d'un jeu de rôle texte HARDCORE et RÉALISTE.
+Consignes d'écriture :
+1. Sois exigeant et réaliste : pas de magie improvisée, pas de décisions irréalistes sans lourdes conséquences. Les échecs doivent infliger des dégâts ou faire perdre du matériel.
+2. À CHAQUE TOUR, tu dois impérativement renvoyer la réponse au format JSON strict avec les clés :
+   - "narrative": La suite de l'histoire (courte, 3-4 phrases).
+   - "hp_change": Variation de PV (ex: 0, -15, +5).
+   - "gold_change": Variation d'or (ex: 0, +10, -5).
+   - "item_add": Nom d'un objet gagné (ou null).
+   - "item_remove": Nom d'un objet perdu (ou null).
+   - "options": Un tableau de 3 choix cliquables ["Option A", "Option B", "Option C"].`;
 
     async function loadGame() {
-      const { data, error } = await supabaseClient
+      const { data } = await supabaseClient
         .from('games')
         .select('actions')
         .eq('id', GAME_ID)
@@ -53,21 +102,36 @@ RÈGLES IMPORTANTES :
 
       if (data && data.actions && data.actions.length > 0) {
         history = data.actions;
+        document.getElementById('startInputArea').style.display = 'none';
+        document.getElementById('optionsArea').style.display = 'flex';
+        render();
       } else {
         history = [{ 
           role: "system", 
-          text: "🎮 **Bienvenue dans la Simulation !**\n\nPour lancer l'aventure, choisis ton thème en donnant autant de détails que tu veux :\n\n👉 **Option 1 : Un Personnage** (ex: *Un détective privé à New York en 1930*, *Un mage noir banni*...)\n👉 **Option 2 : Un Lieu / Une Époque** (ex: *Le Japon en 1945*, *La France du Moyen Âge*, *Une station spatiale en 2150*...)\n\nQue décides-tu d'incarner ou d'explorer ?" 
+          text: "🎮 **Bienvenue dans la Simulation (Mode Hardcore) !**\n\nDécris ton personnage ou le lieu/l'époque où tu souhaites démarrer pour lancer l'aventure." 
         }];
         await saveHistory();
+        render();
       }
-      render();
     }
 
     async function saveHistory() {
       await supabaseClient.from('games').upsert({ id: GAME_ID, actions: history });
     }
 
-    function render() {
+    function updateStatsDisplay() {
+      const hpEl = document.getElementById('hpDisplay');
+      hpEl.innerText = `${playerStats.hp} / 100`;
+      if (playerStats.hp <= 30) hpEl.classList.add('hp-danger');
+      else hpEl.classList.remove('hp-danger');
+
+      document.getElementById('goldDisplay').innerText = playerStats.gold;
+      document.getElementById('inventoryDisplay').innerText = playerStats.inventory.length > 0 
+        ? playerStats.inventory.join(', ') 
+        : 'Aucun objet';
+    }
+
+    function render(lastOptions = []) {
       const log = document.getElementById('log');
       log.innerHTML = history.map(h => {
         if (h.role === 'user') return `<div class="user">Toi : ${h.text}</div>`;
@@ -75,24 +139,49 @@ RÈGLES IMPORTANTES :
         return '';
       }).join('');
       log.scrollTop = log.scrollHeight;
+
+      updateStatsDisplay();
+
+      // Affichage des boutons d'options
+      const optionsArea = document.getElementById('optionsArea');
+      optionsArea.innerHTML = '';
+      if (lastOptions.length > 0 && playerStats.hp > 0) {
+        lastOptions.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'option-btn';
+          btn.innerText = opt;
+          btn.onclick = () => selectOption(opt);
+          optionsArea.appendChild(btn);
+        });
+      } else if (playerStats.hp <= 0) {
+        optionsArea.innerHTML = `<div style="color:#f56565; font-weight:bold; text-align:center;">💀 VOUS ÊTES MORT. Cliquez sur Recommencer.</div>`;
+      }
     }
 
-    async function playTurn() {
+    async function submitCustomInput() {
       const input = document.getElementById('actionInput');
-      const btn = document.getElementById('sendBtn');
       const text = input.value.trim();
       if (!text) return;
 
-      input.value = '';
-      btn.disabled = true;
+      document.getElementById('startInputArea').style.display = 'none';
+      document.getElementById('optionsArea').style.display = 'flex';
 
-      history.push({ role: "user", text: text });
+      await playTurn(text);
+    }
+
+    async function selectOption(optionText) {
+      await playTurn(optionText);
+    }
+
+    async function playTurn(userChoice) {
+      history.push({ role: "user", text: userChoice });
       render();
       await saveHistory();
 
       try {
-        const prompt = SYSTEM_INSTRUCTION + "\n\nHistorique :\n" + 
-          history.map(h => `${h.role}: ${h.text}`).join('\n');
+        const prompt = SYSTEM_INSTRUCTION + "\n\nStats actuelles du joueur : " + JSON.stringify(playerStats) +
+          "\n\nHistorique :\n" + history.map(h => `${h.role}: ${h.text}`).join('\n') +
+          "\n\nRéponds EXCLUSIVEMENT sous forme d'un objet JSON valide sans balises Markdown.";
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
@@ -103,22 +192,39 @@ RÈGLES IMPORTANTES :
         const data = await res.json();
         if (data.error) throw new Error(data.error.message);
 
-        const reply = data.candidates[0].content.parts[0].text;
-        history.push({ role: "model", text: reply });
+        let rawText = data.candidates[0].content.parts[0].text.trim();
+        // Nettoyage au cas où le modèle inclut des balises ```json
+        rawText = rawText.replace(/^```json/, '').replace(/```$/, '').trim();
+
+        const parsed = JSON.parse(rawText);
+
+        // Mise à jour des stats
+        playerStats.hp = Math.max(0, Math.min(100, playerStats.hp + (parsed.hp_change || 0)));
+        playerStats.gold = Math.max(0, playerStats.gold + (parsed.gold_change || 0));
         
+        if (parsed.item_add) playerStats.inventory.push(parsed.item_add);
+        if (parsed.item_remove) {
+          const idx = playerStats.inventory.indexOf(parsed.item_remove);
+          if (idx !== -1) playerStats.inventory.splice(idx, 1);
+        }
+
+        history.push({ role: "model", text: parsed.narrative });
         await saveHistory();
-        render();
+
+        render(parsed.options || []);
+
       } catch (err) {
-        alert("Erreur IA : " + err.message);
-      } finally {
-        btn.disabled = false;
+        alert("Erreur de réponse IA : " + err.message);
       }
     }
 
     async function resetGame() {
-      if (confirm("Veux-tu réinitialiser et recommencer une nouvelle aventure ?")) {
+      if (confirm("Recommencer une partie à zéro ?")) {
         history = [];
+        playerStats = { hp: 100, gold: 0, inventory: [] };
         await supabaseClient.from('games').delete().eq('id', GAME_ID);
+        document.getElementById('startInputArea').style.display = 'flex';
+        document.getElementById('optionsArea').style.display = 'none';
         loadGame();
       }
     }
