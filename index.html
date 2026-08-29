@@ -163,8 +163,8 @@
     const SUPABASE_URL = "https://wzqvjndyyljhquxsmxae.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cXZqbmR5eWxqaHF1xHNteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzNTA2MjEsImV4cCI6MjA1NTkyNjYyMX0.9G_M3wF59z7O-q1xW2J2x5O2lY6f4K1c"; 
     
-    // COLLE TA CLÉ GROQ ICI (gsk_...)
-    const GROQ_API_KEY = "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";
+    // N'oublie pas de coller ta clé Groq (gsk_...) entre les guillemets ci-dessous
+    const GROQ_API_KEY = "COLLE_TA_CLE_GROQ_ICI";
     
     const GAME_ID = "11111111-1111-1111-1111-111111111111";
 
@@ -316,7 +316,7 @@ RÈGLES STRICTES DE GAMEPLAY :
             "Authorization": `Bearer ${GROQ_API_KEY}`
           },
           body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
+            model: "llama3-8b-8192",
             messages: messages,
             response_format: { type: "json_object" }
           })
