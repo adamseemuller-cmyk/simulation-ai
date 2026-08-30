@@ -31,8 +31,6 @@
     .stat-group { display: flex; flex-direction: column; gap: 4px; }
     .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
     .stat-value { font-size: 1rem; font-weight: 600; color: #f8fafc; }
-    .progress-bar { width: 100%; height: 6px; background: #0f172a; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-    .progress-fill { height: 100%; background: #38bdf8; transition: width 0.3s; }
 
     .controls-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
     
@@ -53,6 +51,11 @@
     .action-btn { padding: 10px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
     .action-btn:hover { background: #0369a1; }
 
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .form-group label { font-size: 0.85rem; color: #94a3b8; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.9rem; }
+    .form-group textarea { resize: vertical; height: 70px; }
+
     .reset-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 10px; }
     .reset-btn:hover { background: #ef44441a; }
   </style>
@@ -62,7 +65,7 @@
   <div class="app-container">
     <header>
       <h1>SIMULATION INTERACTIVE DYNAMIQUE</h1>
-      <p>Interface et statistiques contextuelles selon votre scénario</p>
+      <p>Création de profil et progression narrative</p>
     </header>
 
     <div class="banner">
@@ -72,52 +75,69 @@
 
     <div class="main-grid">
       <div class="log-panel" id="logPanel">
-        <div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour initialiser votre univers et vos statistiques spécifiques.</div>
+        <div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour configurer votre histoire.</div>
       </div>
 
       <div class="side-panel">
-        <div class="panel-title">Statistiques du personnage</div>
-        
+        <div class="panel-title">Profil du Personnage</div>
+        <div class="stat-group">
+          <div class="stat-label">Nom / Identité</div>
+          <div class="stat-value" id="charNameVal" style="color: #38bdf8;">Inconnu</div>
+        </div>
         <div class="stat-group">
           <div class="stat-label">Mode Actuel</div>
-          <div class="stat-value" id="modeVal" style="color: #38bdf8;">Aucun</div>
+          <div class="stat-value" id="modeVal">Aucun</div>
         </div>
-
         <div id="dynamicStatsContainer" style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="font-size: 0.85rem; color: #94a3b8;">En attente de sélection...</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">En attente...</div>
         </div>
-
-        <button class="reset-btn" onclick="resetGame()">Changer de mode</button>
+        <button class="reset-btn" onclick="resetGame()">Recommencer</button>
       </div>
     </div>
 
     <div class="controls-panel">
+      <!-- Étape 1 : Choix du Mode -->
       <div id="setupArea">
-        <div class="mode-selection-title">Choisissez votre mode d'histoire :</div>
+        <div class="mode-selection-title">1. Choisissez votre mode d'histoire :</div>
         <div class="modes-grid">
-          <div class="mode-card" onclick="initGame('survie')">
+          <div class="mode-card" onclick="selectMode('survie')">
             <h3>🌲 Survie</h3>
-            <p>Milieu hostile. Santé, faim et énergie vitales.</p>
+            <p>Milieu hostile. Santé, faim et énergie.</p>
           </div>
-          <div class="mode-card" onclick="initGame('business')">
+          <div class="mode-card" onclick="selectMode('business')">
             <h3>💼 Business</h3>
-            <p>Entrepreneuriat. Capital, réseau et réputation.</p>
+            <p>Start-up, capital et réseau.</p>
           </div>
-          <div class="mode-card" onclick="initGame('crime')">
+          <div class="mode-card" onclick="selectMode('crime')">
             <h3>🕶️ Illégal / Crime</h3>
-            <p>Monde clandestin. Argent sale et paranoïa.</p>
+            <p>Monde clandestin et paranoïa.</p>
           </div>
-          <div class="mode-card" onclick="initGame('guerre')">
+          <div class="mode-card" onclick="selectMode('guerre')">
             <h3>⚔️ Tactique & Guerre</h3>
-            <p>Zone de conflit. Munitions et moral des troupes.</p>
+            <p>Zone de conflit et moral.</p>
           </div>
-          <div class="mode-card" onclick="initGame('combat')">
+          <div class="mode-card" onclick="selectMode('combat')">
             <h3>🏆 Sport de Combat</h3>
-            <p>Compétition. Forme physique et technique.</p>
+            <p>Forme, technique et victoires.</p>
           </div>
         </div>
       </div>
 
+      <!-- Étape 2 : Création du Lore / Personnage -->
+      <div id="loreArea" style="display:none;" class="setup-box">
+        <div class="mode-selection-title">2. Créez votre Lore et votre identité :</div>
+        <div class="form-group">
+          <label>Nom de votre personnage :</label>
+          <input type="text" id="inputName" placeholder="Ex: Alex Vance, Rocky...">
+        </div>
+        <div class="form-group">
+          <label>Votre histoire / Contexte de départ :</label>
+          <textarea id="inputLore" placeholder="Ex: Ancien espoir cherchant à tout prix à remonter sur le ring..."></textarea>
+        </div>
+        <button class="action-btn" onclick="startSimulation()">Lancer l'aventure</button>
+      </div>
+
+      <!-- Étape 3 : Contrôles du jeu -->
       <div id="gameControls" style="display:none;" class="setup-box">
         <div style="font-size:0.8rem; color:#94a3b8; margin-bottom: 4px;">Choix stratégiques :</div>
         <div class="options-grid" id="optionsGrid"></div>
@@ -132,75 +152,56 @@
 
   <script>
     let currentMode = null;
+    let charName = "";
+    let charLore = "";
     let history = [];
     let stats = {};
+    let turnCount = 0;
 
-    // Définition des profils de stats uniques par mode
     const modeConfigs = {
-      survie: {
-        name: "Survie en milieu hostile",
-        quest: "Trouver de l'eau potable et un abri sécurisé",
-        stats: { hp: 100, faim: 80, energie: 90, ressources: 25 },
-        labels: { hp: "Santé (PV)", faim: "Niveau de Faim", energie: "Énergie", ressources: "Matériaux" }
-      },
-      business: {
-        name: "Business & Start-up",
-        quest: "Lancer le premier prototype et trouver des clients",
-        stats: { capital: 5000, reseau: 15, reputation: 10, stress: 20 },
-        labels: { capital: "Capital (€)", reseau: "Réseau pro", reputation: "Réputation", stress: "Niveau de Stress" }
-      },
-      crime: {
-        name: "Monde Clandestin",
-        quest: "Blanchir de l'argent et éviter les indics",
-        stats: { argentSale: 2500, parano: 15, respect: 30, pv: 100 },
-        labels: { argentSale: "Argent sale (€)", parano: "Paranoïa", respect: "Respect rue", pv: "Santé (PV)" }
-      },
-      guerre: {
-        name: "Opérations Tactiques",
-        quest: "Sécuriser le secteur et rapatrier l'escouade",
-        stats: { munitions: 45, moral: 80, sante: 100, commandement: 50 },
-        labels: { munitions: "Munitions", moral: "Moral des troupes", sante: "Intégrité physique", commandement: "Autorité" }
-      },
-      combat: {
-        name: "Carrière de Combattant",
-        quest: "S'entraîner pour le championnat mondial",
-        stats: { forme: 90, technique: 40, energie: 100, palmares: 0 },
-        labels: { forme: "Forme physique", technique: "Technique de combat", energie: "Récupération", palmares: "Victoires" }
-      }
+      survie: { name: "Survie", quest: "Trouver de l'eau et un abri", stats: { hp: 100, faim: 80, energie: 90, ressources: 25 }, labels: { hp: "Santé (PV)", faim: "Faim", energie: "Énergie", ressources: "Matériaux" } },
+      business: { name: "Business", quest: "Lancer le premier produit", stats: { capital: 5000, reseau: 15, reputation: 10, stress: 20 }, labels: { capital: "Capital (€)", reseau: "Réseau", reputation: "Réputation", stress: "Stress" } },
+      crime: { name: "Illégal", quest: "Blanchir l'argent sale", stats: { argentSale: 2500, parano: 15, respect: 30, pv: 100 }, labels: { argentSale: "Argent sale", parano: "Paranoïa", respect: "Respect", pv: "Santé (PV)" } },
+      guerre: { name: "Guerre", quest: "Sécuriser le secteur", stats: { munitions: 45, moral: 80, sante: 100, commandement: 50 }, labels: { munitions: "Munitions", moral: "Moral", sante: "Santé", commandement: "Autorité" } },
+      combat: { name: "Combat", quest: "Gagner le championnat", stats: { forme: 80, technique: 50, energie: 90, victoires: 0 }, labels: { forme: "Forme physique", technique: "Technique", energie: "Énergie", victoires: "Victoires" } }
     };
 
-    function initGame(modeKey) {
+    function selectMode(modeKey) {
       currentMode = modeKey;
-      let config = modeConfigs[modeKey];
-      stats = { ...config.stats };
-      
       document.getElementById('setupArea').style.display = 'none';
+      document.getElementById('loreArea').style.display = 'flex';
+    }
+
+    function startSimulation() {
+      charName = document.getElementById('inputName').value.trim() || "Inconnu";
+      charLore = document.getElementById('inputLore').value.trim() || "Aucun détail fourni.";
+      
+      let config = modeConfigs[currentMode];
+      stats = { ...config.stats };
+      turnCount = 0;
+
+      document.getElementById('loreArea').style.display = 'none';
       document.getElementById('gameControls').style.display = 'flex';
+      
+      document.getElementById('charNameVal').innerText = charName;
       document.getElementById('modeVal').innerText = config.name;
       document.getElementById('questBanner').innerText = `Objectif : ${config.quest}`;
       
-      history = [{ role: "system", text: `Simulation lancée avec succès en mode : ${config.name}.` }];
-      
+      history = [
+        { role: "system", text: `Personnage créé : ${charName}. Contexte : "${charLore}"` },
+        { role: "ai", text: `Bienvenue dans cette simulation de type ${config.name}. Votre histoire commence maintenant. ${charLore}` }
+      ];
+
       renderStatsUI();
-      triggerTurn(`Vous débutez votre parcours. L'atmosphère est tendue. Quelle est votre première décision stratégique ?`);
+      triggerNextTurn("La tension monte. Le décor est planté, comment agissez-vous pour progresser ?");
     }
 
     function renderStatsUI() {
       let config = modeConfigs[currentMode];
       let container = document.getElementById('dynamicStatsContainer');
       container.innerHTML = '';
-
       for (let key in stats) {
-        let label = config.labels[key] || key;
-        let val = stats[key];
-        
-        let html = `
-          <div class="stat-group">
-            <div class="stat-label">${label}</div>
-            <div class="stat-value">${val}</div>
-          </div>
-        `;
-        container.innerHTML += html;
+        container.innerHTML += `<div class="stat-group"><div class="stat-label">${config.labels[key] || key}</div><div class="stat-value">${stats[key]}</div></div>`;
       }
     }
 
@@ -211,7 +212,6 @@
 
       let optionsGrid = document.getElementById('optionsGrid');
       optionsGrid.innerHTML = '';
-      
       options.forEach(opt => {
         let btn = document.createElement('button');
         btn.className = 'option-btn';
@@ -221,62 +221,63 @@
       });
     }
 
-    function triggerTurn(narrative) {
+    function triggerNextTurn(narrative) {
       history.push({ role: "ai", text: narrative });
-      
-      // Options dynamiques contextuelles selon le mode
-      let options = getDynamicOptionsForMode();
+      turnCount++;
+      let options = getEvolvingOptions();
       renderLogAndOptions(narrative, options);
     }
 
-    function getDynamicOptionsForMode() {
-      if (currentMode === 'survie') {
-        return [
-          { text: "Chercher de l'eau près du ruisseau (Risqué mais vital)", effects: { faim: 10, energie: -15, hp: -5 } },
-          { text: "Renforcer l'abri en bois pour la nuit", effects: { energie: -20, ressources: 10 } },
-          { text: "Économiser ses forces et dormir", effects: { energie: 25, faim: -10 } }
-        ];
-      } else if (currentMode === 'business') {
-        return [
-          { text: "Démarcher des investisseurs à un évènement tech", effects: { capital: -200, reseau: 15, stress: 10 } },
-          { text: "Optimiser le code du produit avec l'équipe", effects: { reputation: 5, stress: 15 } },
-          { text: "Faire une pause pour souffler et réduire la pression", effects: { stress: -25 } }
-        ];
-      } else if (currentMode === 'crime') {
-        return [
-          { text: "Organiser un coup discret dans le quartier nord", effects: { argentSale: 800, parano: 20 } },
-          { text: "Aller voir un contact pour blanchir une partie des fonds", effects: { argentSale: -500, respect: 10 } },
-          { text: "Se faire discret et changer de planque", effects: { parano: -15 } }
-        ];
-      } else if (currentMode === 'guerre') {
-        return [
-          { text: "Avancer prudemment en reconnaissance visuelle", effects: { moral: 5, munitions: -5 } },
-          { text: "Demander un ravitaillement par radio", effects: { munitions: 20, commandement: 5 } },
-          { text: "Sécuriser une position fortifiée", effects: { sante: 5, moral: -10 } }
-        ];
+    // Génère des choix qui évoluent selon le tour et le mode
+    function getEvolvingOptions() {
+      if (currentMode === 'combat') {
+        if (turnCount === 1) {
+          return [
+            { text: "Faire un sparing intense avec un partenaire lourd", effects: { technique: 10, forme: -15, energie: -10 } },
+            { text: "Travailler les esquives et le jeu de jambes", effects: { technique: 15, energie: -10 } },
+            { text: "Prendre un jour de repos pour soigner les courbatures", effects: { energie: 20, forme: 5 } }
+          ];
+        } else if (turnCount === 2) {
+          return [
+            { text: "Accepter un combat de placement clandestin", effects: { victoires: 1, technique: 10, forme: -20 } },
+            { text: "Analyser les vidéos de votre futur adversaire", effects: { technique: 15, energie: -5 } },
+            { text: "Suivre un régime strict avec le nutritionniste", effects: { forme: 15, energie: 5 } }
+          ];
+        } else {
+          return [
+            { text: "Monter sur le ring pour le grand championnat régional", effects: { victoires: 1, forme: -30 } },
+            { text: "Intensifier l'entraînement physique à l'extrême", effects: { forme: 20, energie: -25 } },
+            { text: "Relâcher la pression et souffler un peu", effects: { energie: 30 } }
+          ];
+        }
       } else {
+        // Options génériques évolutives pour les autres modes
         return [
-          { text: "Intensifier l'entraînement cardio et endurance", effects: { forme: 10, energie: -20 } },
-          { text: "Travailler la technique de frappe avec le coach", effects: { technique: 15, energie: -15 } },
-          { text: "S'accorder une journée de repos complet", effects: { energie: 30, forme: -5 } }
+          { text: "Fancer tête baissée sur l'objectif principal", effects: { energie: -15 } },
+          { text: "Analyser les risques et sécuriser vos arrières", effects: { energie: -5 } },
+          { text: "Chercher du soutien auprès de vos contacts", effects: { energie: -10 } }
         ];
       }
     }
 
     function handleChoice(opt) {
       history.push({ role: "user", text: opt.text });
+      let feedback = `Action : "${opt.text}".`;
       
-      // Appliquer les variations de stats
-      let feedback = `Action effectuée : "${opt.text}".`;
       for (let key in opt.effects) {
         if (stats[key] !== undefined) {
-          stats[key] = Math.max(0, stats[key] + opt.effects[key]);
-          feedback += ` (${key.toUpperCase()} : ${opt.effects[key] > 0 ? '+' : ''}${opt.effects[key]})`;
+          // Applique l'effet avec des limites logiques (ex: 0 à 100 max pour éviter l'explosion des stats)
+          if (key !== 'victoires') {
+            stats[key] = Math.max(0, Math.min(100, stats[key] + opt.effects[key]));
+          } else {
+            stats[key] += opt.effects[key]; // Les victoires peuvent augmenter sans limite
+          }
+          feedback += ` (${key.toUpperCase()} ${opt.effects[key] > 0 ? '+' : ''}${opt.effects[key]})`;
         }
       }
 
       renderStatsUI();
-      triggerTurn(`Conséquence : ${feedback}. La situation évolue, quelle est votre prochaine décision ?`);
+      triggerNextTurn(`Conséquence : ${feedback}. La situation progresse (Étape ${turnCount + 1}). Que faites-vous ensuite ?`);
     }
 
     function sendCustomAction() {
@@ -286,17 +287,19 @@
       input.value = '';
 
       history.push({ role: "user", text: val });
-      triggerTurn(`Vous tentez une action audacieuse : "${val}". C'est risqué, mais la simulation s'adapte à votre initiative.`);
+      triggerNextTurn(`Vous tentez une approche audacieuse : "${val}". L'histoire s'adapte à votre initiative.`);
     }
 
     function resetGame() {
       currentMode = null;
       document.getElementById('setupArea').style.display = 'block';
+      document.getElementById('loreArea').style.display = 'none';
       document.getElementById('gameControls').style.display = 'none';
+      document.getElementById('charNameVal').innerText = "Inconnu";
       document.getElementById('modeVal').innerText = "Aucun";
       document.getElementById('questBanner').innerText = "Sélectionnez un mode de jeu pour démarrer...";
-      document.getElementById('dynamicStatsContainer').innerHTML = `<div style="font-size: 0.85rem; color: #94a3b8;">En attente de sélection...</div>`;
-      document.getElementById('logPanel').innerHTML = `<div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour initialiser votre univers et vos statistiques spécifiques.</div>`;
+      document.getElementById('dynamicStatsContainer').innerHTML = `<div style="font-size: 0.85rem; color: #94a3b8;">En attente...</div>`;
+      document.getElementById('logPanel').innerHTML = `<div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour configurer votre histoire.</div>`;
     }
   </script>
 </body>
