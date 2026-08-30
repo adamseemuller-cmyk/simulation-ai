@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Ultime - IA Connectée</title>
+  <title>Simulation Interactive Ultime - Gemini Connecté</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090d16; color: #f1f5f9; min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; }
@@ -57,12 +57,12 @@
 
   <div class="setup-screen" id="setupScreen">
     <div class="setup-card">
-      <h2>Configuration Complète de la Simulation</h2>
+      <h2>Configuration de la Simulation (Gemini)</h2>
       
       <div class="form-group">
-        <label>Clé API (Groq ou OpenAI) :</label>
-        <input type="password" id="cfgApiKey" placeholder="Collez votre clé API ici...">
-        <span class="error-msg" id="apiKeyError">Veuillez entrer une clé API valide pour connecter l'IA.</span>
+        <label>Clé API Gemini (Google AI Studio) :</label>
+        <input type="password" id="cfgApiKey" placeholder="Collez votre clé Gemini ici...">
+        <span class="error-msg" id="apiKeyError">Veuillez entrer une clé API valide.</span>
       </div>
 
       <div class="form-group">
@@ -90,17 +90,17 @@
       </div>
 
       <div class="form-group">
-        <label>Votre Projet / Lore de Départ (Ex: Je lance une boîte de chaussettes à 3000€...) :</label>
-        <textarea id="cfgLore" placeholder="Décrivez votre point de départ en détail..."></textarea>
+        <label>Votre Projet / Lore de Départ :</label>
+        <textarea id="cfgLore" placeholder="Ex: Je lance une marque de chaussettes à 3000€..."></textarea>
       </div>
 
-      <button class="action-btn" style="padding: 14px;" onclick="initSimulation()">Lancer la Simulation Intelligente</button>
+      <button class="action-btn" style="padding: 14px;" onclick="initSimulation()">Lancer la Simulation Gemini</button>
     </div>
   </div>
 
   <div class="app-container">
     <header>
-      <h1 id="appTitle">Simulation Intelligente</h1>
+      <h1 id="appTitle">Simulation Gemini</h1>
       <div class="header-info" id="headerInfo">Tour 1</div>
     </header>
 
@@ -139,8 +139,7 @@
       name: '',
       lore: '',
       turn: 1,
-      stats: {},
-      history: []
+      stats: {}
     };
 
     const modeConfigs = {
@@ -169,7 +168,6 @@
       gameState.lore = lore;
       gameState.turn = 1;
       gameState.stats = { ...modeConfigs[mode].stats };
-      gameState.history = [];
 
       document.getElementById('setupScreen').style.display = 'none';
       document.getElementById('uiName').innerText = name;
@@ -181,8 +179,8 @@
       
       let log = document.getElementById('logPanel');
       log.innerHTML = `
-        <div class="msg system">Simulation initialisée en mode <b>${modeConfigs[mode].name}</b> (${diff.toUpperCase()}). Connexion IA active.</div>
-        <div class="msg ai"><b>Chapitre 1 : Le Commencement</b><br><br><b>Projet initial :</b> ${lore}<br><br>Le décor est planté. Tu as quartier libre absolu : décris précisément ce que tu fais, comment tu t'y prends, et l'IA jugera logiquement de tes résultats. Que fais-tu ?</div>
+        <div class="msg system">Simulation initialisée en mode <b>${modeConfigs[mode].name}</b> (${diff.toUpperCase()}). Connexion Gemini active.</div>
+        <div class="msg ai"><b>Chapitre 1 : Le Commencement</b><br><br><b>Projet initial :</b> ${lore}<br><br>Le décor est planté. Tu as quartier libre absolu : décris précisément ce que tu fais, et l'IA jugera logiquement de tes résultats. Que fais-tu ?</div>
       `;
     }
 
@@ -214,35 +212,34 @@
       document.getElementById('submitBtn').disabled = true;
       textarea.disabled = true;
 
-      // Prompt système strict pour forcer la logique et le format JSON
-      let systemPrompt = `Tu es le moteur expert d'un jeu de rôle textuel de simulation réaliste (${gameState.mode}). Le joueur s'appelle ${gameState.name}, sa difficulté est "${gameState.difficulty}", et son projet de départ est : "${gameState.lore}". 
-Ses stats actuelles sont : ${JSON.stringify(gameState.stats)}.
+      let systemInstruction = `Tu es le moteur expert d'un jeu de rôle textuel de simulation réaliste (${gameState.mode}). Le joueur s'appelle ${gameState.name}, difficulté: "${gameState.difficulty}", projet: "${gameState.lore}". 
+Ses stats actuelles sont: ${JSON.stringify(gameState.stats)}.
 Règles strictes :
-1. Analyse l'action textuelle du joueur avec une logique implacable et réaliste (si l'action est absurde, satirique ou magique genre "devenir dieu", sanctionne-la logiquement ou fais échouer le joueur avec réalisme selon la difficulté).
-2. Mets à jour les statistiques de manière cohérente (hausse ou baisse selon l'action).
-3. Réponds EXCLUSIVEMENT sous la forme d'un objet JSON valide (sans markdown autour si possible, ou juste le JSON) respectant cette structure exacte :
+1. Analyse l'action textuelle du joueur avec une logique implacable et réaliste. Si l'action est absurde (ex: devenir dieu), sanctionne-la logiquement ou fais échouer le joueur.
+2. Mets à jour les statistiques de manière cohérente.
+3. Réponds STRICTEMENT sous format JSON valide sans texte additionnel, avec cette structure exacte :
 {
-  "narrative": "Le texte de l'histoire qui raconte les conséquences de l'action du joueur de manière immersive...",
+  "narrative": "Le texte de l'histoire qui raconte les conséquences...",
   "statChanges": {
     "nom_de_stat": valeur_ajoutee_ou_soustraite (ex: -10 ou +15)
-  },
-  "gameOver": false
+  }
 }`;
 
       try {
-        let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gameState.apiKey}`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${gameState.apiKey}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: actionText }
-            ],
-            temperature: 0.7
+            contents: [
+              {
+                parts: [
+                  { text: systemInstruction },
+                  { text: `Action du joueur : ${actionText}` }
+                ]
+              }
+            ]
           })
         });
 
@@ -251,12 +248,10 @@ Règles strictes :
           throw new Error(data.error.message);
         }
 
-        let content = data.choices[0].message.content;
-        // Nettoyage au cas où l'IA met des balises markdown de code
-        content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        let result = JSON.parse(content);
+        let rawText = data.candidates[0].content.parts[0].text;
+        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        let result = JSON.parse(rawText);
 
-        // Appliquer les changements de stats
         if (result.statChanges) {
           for (let s in result.statChanges) {
             if (gameState.stats[s] !== undefined) {
@@ -272,7 +267,7 @@ Règles strictes :
         log.scrollTop = log.scrollHeight;
 
       } catch (err) {
-        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur lors de la communication avec l'IA : ${err.message}. Vérifie ta clé API.</div>`;
+        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur Gemini : ${err.message}. Vérifie ta clé API.</div>`;
       }
 
       document.getElementById('submitBtn').disabled = false;
