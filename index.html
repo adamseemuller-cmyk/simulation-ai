@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Ultime - Fix Modèle</title>
+  <title>Simulation Interactive Ultime - Dilemmes & Immersion</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090d16; color: #f1f5f9; min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; }
@@ -24,6 +24,8 @@
     .msg.system { background: #1e293b; border-left: 3px solid #64748b; color: #cbd5e1; font-style: italic; width: 100%; max-width: 100%; font-size: 0.9rem; }
     .msg.user { background: #0284c7; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg.ai { background: #1e293b; border: 1px solid #334155; color: #f8fafc; align-self: flex-start; border-left: 4px solid #38bdf8; border-bottom-left-radius: 2px; width: 100%; max-width: 100%; }
+
+    .dilemma-box { margin-top: 12px; padding: 12px; background: #090d16; border: 1px dashed #38bdf8; border-radius: 6px; color: #38bdf8; font-weight: 500; }
 
     .input-panel { padding: 15px 20px; background: #1e293b; border-top: 1px solid #334155; display: flex; gap: 10px; }
     .input-panel textarea { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 0.95rem; resize: none; height: 55px; font-family: inherit; }
@@ -59,7 +61,7 @@
 
   <div class="setup-screen" id="setupScreen">
     <div class="setup-card">
-      <h2>Simulation Sur-Mesure (Gemini 3.5 / 3.6)</h2>
+      <h2>Simulation Interactive - Dilemmes & Immersion</h2>
       
       <div class="form-group">
         <label>Clé API Gemini :</label>
@@ -106,7 +108,7 @@
         <textarea id="cfgLore" placeholder="Ex: je suis pauvre mais je me bat très bien et j'ai jamais perdu je suis jeune et habite a paris"></textarea>
       </div>
 
-      <button class="action-btn" id="launchBtn" style="padding: 14px;" onclick="initSimulation()">Générer l'Introduction Sur-Mesure</button>
+      <button class="action-btn" id="launchBtn" style="padding: 14px;" onclick="initSimulation()">Lancer l'Aventure à Dilemmes</button>
     </div>
   </div>
 
@@ -120,7 +122,7 @@
       <div class="chat-section">
         <div class="log-panel" id="logPanel"></div>
         <div class="input-panel">
-          <textarea id="userInput" placeholder="Tapez votre action en toute liberté..." onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
+          <textarea id="userInput" placeholder="Décris ton action ou réponds au dilemme..." onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
           <button class="action-btn" id="submitBtn" onclick="submitAction()">Envoyer</button>
         </div>
       </div>
@@ -186,17 +188,21 @@
 
       let launchBtn = document.getElementById('launchBtn');
       launchBtn.disabled = true;
-      launchBtn.innerHTML = `<span class="loading-spinner"></span>Génération de l'univers par l'IA...`;
+      launchBtn.innerHTML = `<span class="loading-spinner"></span>Création du scénario sur-mesure...`;
 
-      let promptIntro = `Tu es le maître d'un jeu de rôle textuel de simulation hautement immersif. 
-Le joueur s'appelle ${name}, en mode ${mode}, difficulté ${diff}. 
-Son histoire/lore de départ personnalisé saisi par ses soins est : "${lore}".
-Ses statistiques initiales sont : ${JSON.stringify(gameState.stats)}.
+      let promptIntro = `Tu es le maître d'un jeu de rôle textuel de simulation ultra-immersif basé sur des choix et des dilemmes forts. 
+Le joueur s'appelle ${name}, mode ${mode}, difficulté ${diff}. 
+Son lore/scénario personnel saisi : "${lore}".
+Stats initiales : ${JSON.stringify(gameState.stats)}.
 
-Rédige l'introduction unique et sur-mesure (Chapitre 1) en intégrant à 100% les spécificités de son lore (ex: s'il est jeune, habite à Paris, se bat très bien sans jamais perdre, etc.). Adapte totalement le ton à sa situation.
-Réponds STRICTEMENT en JSON valide avec cette structure exacte :
+Règles pour l'introduction (Chapitre 1) :
+1. Intègre à 100% le lore du joueur dès la première phrase pour planter le décor (ex: s'il est jeune, à Paris, se bat bien, etc.).
+2. Fais vivre une scène marquante immédiate (ex: un type louche l'aborde, un choix crucial se présente, ou un événement inattendu surgit).
+3. À la fin de ton texte, **tu dois obligatoirement poser un dilemme clair** qui force le joueur à se positionner.
+4. Réponds STRICTEMENT en JSON valide avec cette structure exacte :
 {
-  "narrative": "Le texte d'introduction immersif qui plante le décor en prenant en compte son lore précis...",
+  "narrative": "Le texte d'introduction immersif basé sur son lore...",
+  "dilemme": "La question ou le choix crucial posé au joueur pour ce tour...",
   "statChanges": {}
 }`;
 
@@ -224,8 +230,11 @@ Réponds STRICTEMENT en JSON valide avec cette structure exacte :
 
         let log = document.getElementById('logPanel');
         log.innerHTML = `
-          <div class="msg system">Simulation initialisée pour <b>${name}</b> | Modèle : ${gameState.model}</div>
-          <div class="msg ai"><b>Chapitre 1 : Le Commencement</b><br><br>${result.narrative}</div>
+          <div class="msg system">Simulation initialisée pour <b>${name}</b> | Mode : ${modeConfigs[mode].name}</div>
+          <div class="msg ai">
+            <b>Chapitre 1 : Le Commencement</b><br><br>${result.narrative}
+            <div class="dilemma-box">⚖️ <b>Dilemme / Situation :</b> ${result.dilemme}</div>
+          </div>
         `;
 
       } catch (err) {
@@ -233,7 +242,7 @@ Réponds STRICTEMENT en JSON valide avec cette structure exacte :
       }
 
       launchBtn.disabled = false;
-      launchBtn.innerHTML = "Générer l'Introduction Sur-Mesure";
+      launchBtn.innerHTML = "Lancer l'Aventure à Dilemmes";
     }
 
     function renderStats() {
@@ -269,24 +278,27 @@ Le joueur s'appelle ${gameState.name}, difficulté: "${gameState.difficulty}", l
 Statistiques actuelles : ${JSON.stringify(gameState.stats)}.
 
 Règles absolues :
-1. Analyse l'action libre du joueur (${actionText}) en tenant compte de tout le contexte précédent et de son lore. L'IA doit réagir de manière cohérente et intelligente.
-2. Ajuste ses statistiques logiquement.
-3. Réponds STRICTEMENT sous format JSON valide (sans aucun texte parasite autour) avec la structure exacte :
+1. Analyse l'action ou la réponse du joueur (${actionText}) en tenant compte de son lore et de ses choix précédents.
+2. Fais progresser l'histoire de manière logique, vivante et percutante (affrontements, rencontres, opportunités, rebondissements).
+3. **À la fin de chaque tour, l'IA doit impérativement poser un nouveau dilemme ou choix critique** pour relancer l'action.
+4. Ajuste ses statistiques logiquement.
+5. Réponds STRICTEMENT sous format JSON valide (sans texte parasite) avec la structure exacte :
 {
-  "narrative": "Le texte narratif de l'histoire qui fait progresser l'intrigue suite à l'action...",
+  "narrative": "Le texte narratif de l'histoire suite à son action...",
+  "dilemme": "Le prochain choix ou dilemme crucial proposé au joueur...",
   "statChanges": {
     "nom_de_stat": valeur_ajoutee_ou_soustraite (ex: -5 ou +10)
   }
 }`;
 
-    try {
+      try {
         let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gameState.model}:generateContent?key=${gameState.apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [
               { role: "user", parts: [{ text: systemPrompt }] },
-              { role: "model", parts: [{ text: "Compris. J'attends l'action du joueur pour générer le JSON." }] },
+              { role: "model", parts: [{ text: "Compris. J'attends l'action du joueur pour générer le JSON avec récit et dilemme." }] },
               { role: "user", parts: [{ text: `Action du joueur : ${actionText}` }] }
             ]
           })
@@ -302,7 +314,7 @@ Règles absolues :
         if (result.statChanges) {
           for (let s in result.statChanges) {
             if (gameState.stats[s] !== undefined) {
-              gameState.stats.s = Math.max(0, gameState.stats[s] + result.statChanges[s]); // correction bug stats
+              gameState.stats[s] = Math.max(0, gameState.stats[s] + result.statChanges[s]);
             }
           }
         }
@@ -310,7 +322,12 @@ Règles absolues :
         gameState.turn++;
         renderStats();
 
-        log.innerHTML += `<div class="msg ai"><b>Tour ${gameState.turn}</b><br><br>${result.narrative}</div>`;
+        log.innerHTML += `
+          <div class="msg ai">
+            <b>Tour ${gameState.turn}</b><br><br>${result.narrative}
+            ${result.dilemme ? `<div class="dilemma-box">⚖️ <b>Dilemme / Situation :</b> ${result.dilemme}</div>` : ''}
+          </div>
+        `;
         log.scrollTop = log.scrollHeight;
 
       } catch (err) {
