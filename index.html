@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Ultime - Dilemmes & Immersion</title>
+  <title>Simulation Carrière Sport de Combat</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090d16; color: #f1f5f9; min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; }
@@ -61,7 +61,7 @@
 
   <div class="setup-screen" id="setupScreen">
     <div class="setup-card">
-      <h2>Simulation Interactive - Dilemmes & Immersion</h2>
+      <h2>Simulation Carrière MMA & Sport de Combat</h2>
       
       <div class="form-group">
         <label>Clé API Gemini :</label>
@@ -75,17 +75,6 @@
           <option value="gemini-1.5-flash" selected>gemini-1.5-flash (Standard)</option>
           <option value="gemini-1.5-pro">gemini-1.5-pro</option>
           <option value="gemini-3.5-flash">gemini-3.5-flash</option>
-          <option value="gemini-3.6-flash">gemini-3.6-flash</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Mode de Simulation :</label>
-        <select id="cfgMode">
-          <option value="business">💼 Entrepreneuriat, Crypto & Business</option>
-          <option value="combat">🏆 Carrière Sportive / Combat & Arts Martiaux</option>
-          <option value="survie">🌲 Survie en Milieu Hostile & Post-Apocalypse</option>
-          <option value="crime">🕶️ Monde Clandestin & Affaires Sombres</option>
         </select>
       </div>
 
@@ -99,22 +88,22 @@
       </div>
 
       <div class="form-group">
-        <label>Nom du Personnage :</label>
+        <label>Nom du Combattant :</label>
         <input type="text" id="cfgName" placeholder="Ex: Adam...">
       </div>
 
       <div class="form-group">
-        <label>Votre Lore / Scénario de départ personnalisé :</label>
-        <textarea id="cfgLore" placeholder="Ex: je suis pauvre mais je me bat très bien et j'ai jamais perdu je suis jeune et habite a paris"></textarea>
+        <label>Votre Lore / Scénario de départ (Style de combat, passé, objectifs) :</label>
+        <textarea id="cfgLore" placeholder="Ex: Jeune prodige de MMA basé à Paris, encaisseur né, déterminé à signer dans une grande organisation mais fauché..."></textarea>
       </div>
 
-      <button class="action-btn" id="launchBtn" style="padding: 14px;" onclick="initSimulation()">Lancer l'Aventure à Dilemmes</button>
+      <button class="action-btn" id="launchBtn" style="padding: 14px;" onclick="initSimulation()">Lancer la Carrière Sportive</button>
     </div>
   </div>
 
   <div class="app-container">
     <header>
-      <h1 id="appTitle">Simulation Interactive</h1>
+      <h1>Simulation : Sport de Combat & MMA</h1>
       <div class="header-info" id="headerInfo">Tour 1</div>
     </header>
 
@@ -122,16 +111,15 @@
       <div class="chat-section">
         <div class="log-panel" id="logPanel"></div>
         <div class="input-panel">
-          <textarea id="userInput" placeholder="Décris ton action ou réponds au dilemme..." onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
+          <textarea id="userInput" placeholder="Décris ton action, ton entraînement ou réponds au dilemme..." onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
           <button class="action-btn" id="submitBtn" onclick="submitAction()">Envoyer</button>
         </div>
       </div>
 
       <div class="side-panel">
         <div class="panel-section">
-          <div class="panel-title">Profil</div>
+          <div class="panel-title">Profil Combattant</div>
           <div class="stat-row"><span class="stat-label">Nom</span><span class="stat-val" id="uiName">-</span></div>
-          <div class="stat-row"><span class="stat-label">Mode</span><span class="stat-val" id="uiMode">-</span></div>
           <div class="stat-row"><span class="stat-label">Difficulté</span><span class="stat-val" id="uiDiff">-</span></div>
         </div>
 
@@ -149,19 +137,18 @@
     let gameState = {
       apiKey: '',
       model: 'gemini-1.5-flash',
-      mode: '',
       difficulty: 'normal',
       name: '',
       lore: '',
       turn: 1,
-      stats: {}
+      stats: { forme: 80, technique: 50, argent: 400, moral: 80 }
     };
 
-    const modeConfigs = {
-      business: { name: "Business", stats: { argent: 3000, energie: 85, reputation: 10, stress: 20 }, labels: { argent: "Trésorerie (€)", energie: "Énergie", reputation: "Réputation", stress: "Stress" } },
-      combat: { name: "Combat", stats: { forme: 80, technique: 40, argent: 500, moral: 75 }, labels: { forme: "Forme physique", technique: "Technique", argent: "Argent (€)", moral: "Moral" } },
-      survie: { name: "Survie", stats: { sante: 100, faim: 80, ressources: 30, moral: 70 }, labels: { sante: "Santé (PV)", faim: "Ravitaillement", ressources: "Ressources", moral: "Moral" } },
-      crime: { name: "Clandestin", stats: { cash: 2000, parano: 15, respect: 30, integrité: 100 }, labels: { cash: "Cash propre", parano: "Paranoïa", respect: "Respect", integrité: "Intégrité" } }
+    const statLabels = {
+      forme: "Forme physique",
+      technique: "Technique MMA",
+      argent: "Argent (€)",
+      moral: "Moral"
     };
 
     async function initSimulation() {
@@ -172,37 +159,35 @@
       }
 
       let model = document.getElementById('cfgModel').value;
-      let mode = document.getElementById('cfgMode').value;
       let diff = document.getElementById('cfgDiff').value;
       let name = document.getElementById('cfgName').value.trim() || "Adam";
-      let lore = document.getElementById('cfgLore').value.trim() || "Je débute sans rien avec une ambition féroce.";
+      let lore = document.getElementById('cfgLore').value.trim() || "Jeune combattant déterminé à percer dans le milieu du MMA.";
 
       gameState.apiKey = apiKey;
       gameState.model = model;
-      gameState.mode = mode;
       gameState.difficulty = diff;
       gameState.name = name;
       gameState.lore = lore;
       gameState.turn = 1;
-      gameState.stats = { ...modeConfigs[mode].stats };
+      gameState.stats = { forme: 80, technique: 50, argent: 400, moral: 80 };
 
       let launchBtn = document.getElementById('launchBtn');
       launchBtn.disabled = true;
-      launchBtn.innerHTML = `<span class="loading-spinner"></span>Création du scénario sur-mesure...`;
+      launchBtn.innerHTML = `<span class="loading-spinner"></span>Création de la carrière...`;
 
-      let promptIntro = `Tu es le maître d'un jeu de rôle textuel de simulation ultra-immersif basé sur des choix et des dilemmes forts. 
-Le joueur s'appelle ${name}, mode ${mode}, difficulté ${diff}. 
-Son lore/scénario personnel saisi : "${lore}".
+      let promptIntro = `Tu es le maître d'un jeu de rôle textuel immersif spécialisé dans la **carrière de combattant MMA / sports de combat**.
+Le joueur s'appelle ${name}, difficulté ${diff}. 
+Son lore/scénario personnel : "${lore}".
 Stats initiales : ${JSON.stringify(gameState.stats)}.
 
-Règles pour l'introduction (Chapitre 1) :
-1. Intègre à 100% le lore du joueur dès la première phrase pour planter le décor (ex: s'il est jeune, à Paris, se bat bien, etc.).
-2. Fais vivre une scène marquante immédiate (ex: un type louche l'aborde, un choix crucial se présente, ou un événement inattendu surgit).
-3. À la fin de ton texte, **tu dois obligatoirement poser un dilemme clair** qui force le joueur à se positionner.
-4. Réponds STRICTEMENT au format JSON pur, sans texte avant ni après, avec cette structure exacte :
+Règles strictes :
+1. Intègre à 100% le lore du joueur dès la première phrase (sa situation, son style, son environnement).
+2. Plonge-le directement dans une scène réaliste de sa vie de combattant (à la salle, en préparation d'un combat, face à un choix de coach ou un sparring difficile).
+3. **À la fin de ton texte, pose obligatoirement un dilemme clair ou un choix percutant** (optionnel : propose des choix A/B/C ou laisse une totale liberté d'écriture).
+4. Réponds STRICTEMENT au format JSON pur (sans balises markdown autour ni texte parasite) avec cette structure exacte :
 {
-  "narrative": "Le texte d'introduction immersif basé sur son lore...",
-  "dilemme": "La question ou le choix crucial posé au joueur pour ce tour...",
+  "narrative": "Le texte d'introduction immersif...",
+  "dilemme": "Le dilemme ou la question cruciale posée au joueur...",
   "statChanges": {}
 }`;
 
@@ -217,47 +202,40 @@ Règles pour l'introduction (Chapitre 1) :
         if (data.error) throw new Error(data.error.message);
 
         let rawText = data.candidates[0].content.parts[0].text;
-        
-        // Extraction robuste du JSON pour éviter les crashs d'analyse
         let jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error("L'IA n'a pas renvoyé de format JSON valide.");
-        }
+        if (!jsonMatch) throw new Error("Format JSON invalide reçu de l'IA.");
         let result = JSON.parse(jsonMatch[0]);
 
         document.getElementById('setupScreen').style.display = 'none';
         document.getElementById('uiName').innerText = name;
-        document.getElementById('uiMode').innerText = modeConfigs[mode].name;
         document.getElementById('uiDiff').innerText = diff.toUpperCase();
-        document.getElementById('appTitle').innerText = `Simulation : ${modeConfigs[mode].name}`;
 
         renderStats();
 
         let log = document.getElementById('logPanel');
         log.innerHTML = `
-          <div class="msg system">Simulation initialisée pour <b>${name}</b> | Mode : ${modeConfigs[mode].name}</div>
+          <div class="msg system">Carrière lancée pour <b>${name}</b> (Spécialité : Sport de Combat / MMA)</div>
           <div class="msg ai">
-            <b>Chapitre 1 : Le Commencement</b><br><br>${result.narrative}
+            <b>Début de l'aventure</b><br><br>${result.narrative}
             <div class="dilemma-box">⚖️ <b>Dilemme / Situation :</b> ${result.dilemme}</div>
           </div>
         `;
 
       } catch (err) {
-        alert("Erreur lors de l'initialisation avec Gemini : " + err.message);
+        alert("Erreur d'initialisation : " + err.message);
       }
 
       launchBtn.disabled = false;
-      launchBtn.innerHTML = "Lancer l'Aventure à Dilemmes";
+      launchBtn.innerHTML = "Lancer la Carrière Sportive";
     }
 
     function renderStats() {
-      let config = modeConfigs[gameState.mode];
       let container = document.getElementById('statsContainer');
       container.innerHTML = '';
       for (let key in gameState.stats) {
         container.innerHTML += `
           <div class="stat-row">
-            <span class="stat-label">${config.labels[key] || key}</span>
+            <span class="stat-label">${statLabels[key] || key}</span>
             <span class="stat-val" id="stat-${key}">${gameState.stats[key]}</span>
           </div>
         `;
@@ -278,21 +256,24 @@ Règles pour l'introduction (Chapitre 1) :
       document.getElementById('submitBtn').disabled = true;
       textarea.disabled = true;
 
-      let systemPrompt = `Tu es le moteur expert d'un jeu de rôle textuel de simulation réaliste et adaptatif (${gameState.mode}). 
+      let systemPrompt = `Tu es le moteur expert d'une simulation de carrière de combattant MMA. 
 Le joueur s'appelle ${gameState.name}, difficulté: "${gameState.difficulty}", lore initial: "${gameState.lore}". 
 Statistiques actuelles : ${JSON.stringify(gameState.stats)}.
 
 Règles absolues :
-1. Analyse l'action ou la réponse du joueur (${actionText}) en tenant compte de son lore et de ses choix précédents.
-2. Fais progresser l'histoire de manière logique, vivante et percutante (affrontements, rencontres, opportunités, rebondissements).
-3. **À la fin de chaque tour, l'IA doit impérativement poser un nouveau dilemme ou choix critique** pour relancer l'action.
-4. Ajuste ses statistiques logiquement (les valeurs numériques dans 'statChanges' doivent être de simples entiers, ex: -10 ou +5).
-5. Réponds STRICTEMENT au format JSON pur (sans balises markdown superflues, sans texte additionnel) avec la structure exacte :
+1. Analyse l'action du joueur (${actionText}) en maintenant une parfaite continuité logique avec l'histoire précédente.
+2. Fais progresser l'intrigue sportive (entraînements, sparring, gestion des finances, propositions de combats, relations avec le coach ou l'adversaire).
+3. **À la fin de chaque tour, pose impérativement un nouveau dilemme ou un choix critique** pour relancer l'action.
+4. Ajuste les statistiques de façon cohérente (valeurs entières simples, ex: -10, +5).
+5. Réponds STRICTEMENT au format JSON pur avec cette structure exacte :
 {
-  "narrative": "Le texte narratif de l'histoire suite à son action...",
-  "dilemme": "Le prochain choix ou dilemme crucial proposé au joueur...",
+  "narrative": "Le texte narratif de la suite de l'histoire...",
+  "dilemme": "Le prochain dilemme ou choix crucial...",
   "statChanges": {
-    "nom_de_stat": valeur_numerique
+    "forme": 0,
+    "technique": 0,
+    "argent": 0,
+    "moral": 0
   }
 }`;
 
@@ -303,7 +284,7 @@ Règles absolues :
           body: JSON.stringify({
             contents: [
               { role: "user", parts: [{ text: systemPrompt }] },
-              { role: "model", parts: [{ text: "Compris. J'attends l'action du joueur pour générer le JSON avec récit et dilemme." }] },
+              { role: "model", parts: [{ text: "Compris. Prêt pour le prochain tour du combattant." }] },
               { role: "user", parts: [{ text: `Action du joueur : ${actionText}` }] }
             ]
           })
@@ -313,12 +294,8 @@ Règles absolues :
         if (data.error) throw new Error(data.error.message);
 
         let rawText = data.candidates[0].content.parts[0].text;
-        
-        // Extraction robuste du JSON pour éliminer tout résidu textuel ou token parasite
         let jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error("L'IA n'a pas renvoyé un format JSON valide : " + rawText);
-        }
+        if (!jsonMatch) throw new Error("Format JSON invalide : " + rawText);
         let result = JSON.parse(jsonMatch[0]);
 
         if (result.statChanges) {
@@ -341,7 +318,7 @@ Règles absolues :
         log.scrollTop = log.scrollHeight;
 
       } catch (err) {
-        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur Gemini : ${err.message}</div>`;
+        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur : ${err.message}</div>`;
       }
 
       document.getElementById('submitBtn').disabled = false;
