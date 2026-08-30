@@ -199,7 +199,7 @@ Règles pour l'introduction (Chapitre 1) :
 1. Intègre à 100% le lore du joueur dès la première phrase pour planter le décor (ex: s'il est jeune, à Paris, se bat bien, etc.).
 2. Fais vivre une scène marquante immédiate (ex: un type louche l'aborde, un choix crucial se présente, ou un événement inattendu surgit).
 3. À la fin de ton texte, **tu dois obligatoirement poser un dilemme clair** qui force le joueur à se positionner.
-4. Réponds STRICTEMENT en JSON valide avec cette structure exacte :
+4. Réponds STRICTEMENT au format JSON pur, sans texte avant ni après, avec cette structure exacte :
 {
   "narrative": "Le texte d'introduction immersif basé sur son lore...",
   "dilemme": "La question ou le choix crucial posé au joueur pour ce tour...",
@@ -217,8 +217,13 @@ Règles pour l'introduction (Chapitre 1) :
         if (data.error) throw new Error(data.error.message);
 
         let rawText = data.candidates[0].content.parts[0].text;
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        let result = JSON.parse(rawText);
+        
+        // Extraction robuste du JSON pour éviter les crashs d'analyse
+        let jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("L'IA n'a pas renvoyé de format JSON valide.");
+        }
+        let result = JSON.parse(jsonMatch[0]);
 
         document.getElementById('setupScreen').style.display = 'none';
         document.getElementById('uiName').innerText = name;
@@ -281,13 +286,13 @@ Règles absolues :
 1. Analyse l'action ou la réponse du joueur (${actionText}) en tenant compte de son lore et de ses choix précédents.
 2. Fais progresser l'histoire de manière logique, vivante et percutante (affrontements, rencontres, opportunités, rebondissements).
 3. **À la fin de chaque tour, l'IA doit impérativement poser un nouveau dilemme ou choix critique** pour relancer l'action.
-4. Ajuste ses statistiques logiquement.
-5. Réponds STRICTEMENT sous format JSON valide (sans texte parasite) avec la structure exacte :
+4. Ajuste ses statistiques logiquement (les valeurs numériques dans 'statChanges' doivent être de simples entiers, ex: -10 ou +5).
+5. Réponds STRICTEMENT au format JSON pur (sans balises markdown superflues, sans texte additionnel) avec la structure exacte :
 {
   "narrative": "Le texte narratif de l'histoire suite à son action...",
   "dilemme": "Le prochain choix ou dilemme crucial proposé au joueur...",
   "statChanges": {
-    "nom_de_stat": valeur_ajoutee_ou_soustraite (ex: -5 ou +10)
+    "nom_de_stat": valeur_numerique
   }
 }`;
 
@@ -308,8 +313,13 @@ Règles absolues :
         if (data.error) throw new Error(data.error.message);
 
         let rawText = data.candidates[0].content.parts[0].text;
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        let result = JSON.parse(rawText);
+        
+        // Extraction robuste du JSON pour éliminer tout résidu textuel ou token parasite
+        let jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("L'IA n'a pas renvoyé un format JSON valide : " + rawText);
+        }
+        let result = JSON.parse(jsonMatch[0]);
 
         if (result.statChanges) {
           for (let s in result.statChanges) {
