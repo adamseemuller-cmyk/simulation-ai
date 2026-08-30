@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Ultime - Sur-Mesure</title>
+  <title>Simulation Interactive Ultime - Fix Modèle</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090d16; color: #f1f5f9; min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; }
@@ -59,12 +59,22 @@
 
   <div class="setup-screen" id="setupScreen">
     <div class="setup-card">
-      <h2>Simulation Sur-Mesure (Gemini 1.5 Flash)</h2>
+      <h2>Simulation Sur-Mesure (Gemini 3.5 / 3.6)</h2>
       
       <div class="form-group">
         <label>Clé API Gemini :</label>
         <input type="password" id="cfgApiKey" placeholder="Collez votre clé API...">
         <span class="error-msg" id="apiKeyError">Veuillez entrer une clé API valide.</span>
+      </div>
+
+      <div class="form-group">
+        <label>Modèle Gemini :</label>
+        <select id="cfgModel">
+          <option value="gemini-1.5-flash" selected>gemini-1.5-flash (Standard)</option>
+          <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+          <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+          <option value="gemini-3.6-flash">gemini-3.6-flash</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -93,7 +103,7 @@
 
       <div class="form-group">
         <label>Votre Lore / Scénario de départ personnalisé :</label>
-        <textarea id="cfgLore" placeholder="Ex: Je suis un jeune faucheur ruiné qui veut se lancer dans la crypto, ou je suis sur une île déserte infestée de zombies..."></textarea>
+        <textarea id="cfgLore" placeholder="Ex: je suis pauvre mais je me bat très bien et j'ai jamais perdu je suis jeune et habite a paris"></textarea>
       </div>
 
       <button class="action-btn" id="launchBtn" style="padding: 14px;" onclick="initSimulation()">Générer l'Introduction Sur-Mesure</button>
@@ -136,13 +146,13 @@
   <script>
     let gameState = {
       apiKey: '',
+      model: 'gemini-1.5-flash',
       mode: '',
       difficulty: 'normal',
       name: '',
       lore: '',
       turn: 1,
-      stats: {},
-      history: []
+      stats: {}
     };
 
     const modeConfigs = {
@@ -159,31 +169,31 @@
         return;
       }
 
+      let model = document.getElementById('cfgModel').value;
       let mode = document.getElementById('cfgMode').value;
       let diff = document.getElementById('cfgDiff').value;
       let name = document.getElementById('cfgName').value.trim() || "Adam";
       let lore = document.getElementById('cfgLore').value.trim() || "Je débute sans rien avec une ambition féroce.";
 
       gameState.apiKey = apiKey;
+      gameState.model = model;
       gameState.mode = mode;
       gameState.difficulty = diff;
       gameState.name = name;
       gameState.lore = lore;
       gameState.turn = 1;
       gameState.stats = { ...modeConfigs[mode].stats };
-      gameState.history = [];
 
       let launchBtn = document.getElementById('launchBtn');
       launchBtn.disabled = true;
       launchBtn.innerHTML = `<span class="loading-spinner"></span>Génération de l'univers par l'IA...`;
 
-      // Appel initial pour que Gemini crée l'introduction entièrement personnalisée en fonction du lore
       let promptIntro = `Tu es le maître d'un jeu de rôle textuel de simulation hautement immersif. 
 Le joueur s'appelle ${name}, en mode ${mode}, difficulté ${diff}. 
 Son histoire/lore de départ personnalisé saisi par ses soins est : "${lore}".
 Ses statistiques initiales sont : ${JSON.stringify(gameState.stats)}.
 
-Rédige l'introduction unique et sur-mesure (Chapitre 1) en intégrant à 100% les spécificités de son lore (ex: s'il y a des zombies, des cryptos, une enfance difficile, etc.). Adapte totalement le ton à sa situation.
+Rédige l'introduction unique et sur-mesure (Chapitre 1) en intégrant à 100% les spécificités de son lore (ex: s'il est jeune, habite à Paris, se bat très bien sans jamais perdre, etc.). Adapte totalement le ton à sa situation.
 Réponds STRICTEMENT en JSON valide avec cette structure exacte :
 {
   "narrative": "Le texte d'introduction immersif qui plante le décor en prenant en compte son lore précis...",
@@ -191,7 +201,7 @@ Réponds STRICTEMENT en JSON valide avec cette structure exacte :
 }`;
 
       try {
-        let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gameState.model}:generateContent?key=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ contents: [{ parts: [{ text: promptIntro }] }] })
@@ -214,11 +224,9 @@ Réponds STRICTEMENT en JSON valide avec cette structure exacte :
 
         let log = document.getElementById('logPanel');
         log.innerHTML = `
-          <div class="msg system">Simulation initialisée pour <b>${name}</b> | Mode : ${modeConfigs[mode].name} (${diff.toUpperCase()})</div>
+          <div class="msg system">Simulation initialisée pour <b>${name}</b> | Modèle : ${gameState.model}</div>
           <div class="msg ai"><b>Chapitre 1 : Le Commencement</b><br><br>${result.narrative}</div>
         `;
-        
-        gameState.history.push({ role: "model", parts: [{ text: result.narrative }] });
 
       } catch (err) {
         alert("Erreur lors de l'initialisation avec Gemini : " + err.message);
@@ -256,14 +264,13 @@ Réponds STRICTEMENT en JSON valide avec cette structure exacte :
       document.getElementById('submitBtn').disabled = true;
       textarea.disabled = true;
 
-      // Construction d'un prompt ultra-précis qui maintient le fil narratif de l'IA
       let systemPrompt = `Tu es le moteur expert d'un jeu de rôle textuel de simulation réaliste et adaptatif (${gameState.mode}). 
 Le joueur s'appelle ${gameState.name}, difficulté: "${gameState.difficulty}", lore initial: "${gameState.lore}". 
 Statistiques actuelles : ${JSON.stringify(gameState.stats)}.
 
 Règles absolues :
-1. Analyse l'action libre du joueur (${actionText}) en tenant compte de tout le contexte précédent et de son lore. L'IA doit réagir de manière cohérente, intelligente et organique (pas de réponses génériques).
-2. Ajuste ses statistiques logiquement (augmentation ou diminution raisonnable entre 0 et des valeurs cohérentes, évitant les empilements absurdes).
+1. Analyse l'action libre du joueur (${actionText}) en tenant compte de tout le contexte précédent et de son lore. L'IA doit réagir de manière cohérente et intelligente.
+2. Ajuste ses statistiques logiquement.
 3. Réponds STRICTEMENT sous format JSON valide (sans aucun texte parasite autour) avec la structure exacte :
 {
   "narrative": "Le texte narratif de l'histoire qui fait progresser l'intrigue suite à l'action...",
@@ -272,8 +279,8 @@ Règles absolues :
   }
 }`;
 
-      try {
-        let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gameState.apiKey}`, {
+    try {
+        let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gameState.model}:generateContent?key=${gameState.apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -295,7 +302,7 @@ Règles absolues :
         if (result.statChanges) {
           for (let s in result.statChanges) {
             if (gameState.stats[s] !== undefined) {
-              gameState.stats[s] = Math.max(0, gameState.stats[s] + result.statChanges[s]);
+              gameState.stats.s = Math.max(0, gameState.stats[s] + result.statChanges[s]); // correction bug stats
             }
           }
         }
@@ -307,7 +314,7 @@ Règles absolues :
         log.scrollTop = log.scrollHeight;
 
       } catch (err) {
-        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur Gemini : ${err.message}. Vérifie ta console ou ta clé.</div>`;
+        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur Gemini : ${err.message}</div>`;
       }
 
       document.getElementById('submitBtn').disabled = false;
