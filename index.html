@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Dynamique</title>
+  <title>Simulation Interactive Immersive</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 20px; }
@@ -19,11 +19,11 @@
     .main-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
     @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
 
-    .log-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-    .msg { padding: 10px 14px; border-radius: 6px; font-size: 0.95rem; line-height: 1.5; }
-    .msg.system { background: #0f172a; border-left: 3px solid #64748b; color: #cbd5e1; }
+    .log-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; height: 440px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .msg { padding: 12px 16px; border-radius: 6px; font-size: 0.95rem; line-height: 1.6; }
+    .msg.system { background: #0f172a; border-left: 3px solid #64748b; color: #cbd5e1; font-style: italic; }
     .msg.user { background: #0369a1; color: #fff; align-self: flex-end; max-width: 85%; }
-    .msg.ai { background: #334155; color: #f8fafc; align-self: flex-start; max-width: 95%; }
+    .msg.ai { background: #1e293b; border: 1px solid #334155; color: #f8fafc; align-self: flex-start; max-width: 95%; border-left: 4px solid #38bdf8; }
 
     .side-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
     .panel-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
@@ -44,17 +44,19 @@
     .setup-box { display: flex; flex-direction: column; gap: 12px; }
     .options-grid { display: flex; flex-direction: column; gap: 8px; }
     .option-btn { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 12px 14px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 0.9rem; transition: 0.2s; font-weight: 500; }
-    .option-btn:hover { background: #334155; border-color: #38bdf8; }
+    .option-btn:hover:not(:disabled) { background: #334155; border-color: #38bdf8; }
+    .option-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .custom-input-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #334155; padding-top: 10px; }
     .custom-input-group input { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.85rem; }
     .action-btn { padding: 10px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    .action-btn:hover { background: #0369a1; }
+    .action-btn:hover:not(:disabled) { background: #0369a1; }
+    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
     .form-group label { font-size: 0.85rem; color: #94a3b8; }
     .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.9rem; }
-    .form-group textarea { resize: vertical; height: 70px; }
+    .form-group textarea { resize: vertical; height: 80px; }
 
     .reset-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 10px; }
     .reset-btn:hover { background: #ef44441a; }
@@ -64,28 +66,28 @@
 
   <div class="app-container">
     <header>
-      <h1>SIMULATION INTERACTIVE DYNAMIQUE</h1>
-      <p>Création de profil et progression narrative</p>
+      <h1>CHRONIQUES DE SIMULATION</h1>
+      <p>Immersion narrative et gestion de vie réaliste</p>
     </header>
 
     <div class="banner">
-      <span>🎯</span>
-      <span id="questBanner">Sélectionnez un mode de jeu pour démarrer...</span>
+      <span>📖</span>
+      <span id="questBanner">Choisissez votre univers pour commencer l'écriture de votre histoire...</span>
     </div>
 
     <div class="main-grid">
       <div class="log-panel" id="logPanel">
-        <div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour configurer votre histoire.</div>
+        <div class="msg system">Le livre de votre vie est vierge. Sélectionnez un mode pour poser le premier décor.</div>
       </div>
 
       <div class="side-panel">
-        <div class="panel-title">Profil du Personnage</div>
+        <div class="panel-title">Statut & Vie</div>
         <div class="stat-group">
-          <div class="stat-label">Nom / Identité</div>
+          <div class="stat-label">Identité</div>
           <div class="stat-value" id="charNameVal" style="color: #38bdf8;">Inconnu</div>
         </div>
         <div class="stat-group">
-          <div class="stat-label">Mode Actuel</div>
+          <div class="stat-label">Univers</div>
           <div class="stat-value" id="modeVal">Aucun</div>
         </div>
         <div id="dynamicStatsContainer" style="display: flex; flex-direction: column; gap: 12px;">
@@ -98,53 +100,49 @@
     <div class="controls-panel">
       <!-- Étape 1 : Choix du Mode -->
       <div id="setupArea">
-        <div class="mode-selection-title">1. Choisissez votre mode d'histoire :</div>
+        <div class="mode-selection-title">1. Choisissez le type de simulation :</div>
         <div class="modes-grid">
-          <div class="mode-card" onclick="selectMode('survie')">
-            <h3>🌲 Survie</h3>
-            <p>Milieu hostile. Santé, faim et énergie.</p>
-          </div>
-          <div class="mode-card" onclick="selectMode('business')">
-            <h3>💼 Business</h3>
-            <p>Start-up, capital et réseau.</p>
-          </div>
-          <div class="mode-card" onclick="selectMode('crime')">
-            <h3>🕶️ Illégal / Crime</h3>
-            <p>Monde clandestin et paranoïa.</p>
-          </div>
-          <div class="mode-card" onclick="selectMode('guerre')">
-            <h3>⚔️ Tactique & Guerre</h3>
-            <p>Zone de conflit et moral.</p>
-          </div>
           <div class="mode-card" onclick="selectMode('combat')">
             <h3>🏆 Sport de Combat</h3>
-            <p>Forme, technique et victoires.</p>
+            <p>Carrière, rigueur, gestion de la fatigue et de la vie perso.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('business')">
+            <h3>💼 Business & Start-up</h3>
+            <p>Entrepreneuriat, risques financiers et choix de vie.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('survie')">
+            <h3>🌲 Survie Hostile</h3>
+            <p>Isolé du monde, chaque décision pèse lourd.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('crime')">
+            <h3>🕶️ Monde Clandestin</h3>
+            <p>Affaires louches, paranoïa et équilibre précaire.</p>
           </div>
         </div>
       </div>
 
-      <!-- Étape 2 : Création du Lore / Personnage -->
+      <!-- Étape 2 : Création du Lore -->
       <div id="loreArea" style="display:none;" class="setup-box">
-        <div class="mode-selection-title">2. Créez votre Lore et votre identité :</div>
+        <div class="mode-selection-title">2. Donnez vie à votre personnage :</div>
         <div class="form-group">
-          <label>Nom de votre personnage :</label>
-          <input type="text" id="inputName" placeholder="Ex: Alex Vance, Rocky...">
+          <label>Nom complet :</label>
+          <input type="text" id="inputName" placeholder="Ex: Marcus Leroy">
         </div>
         <div class="form-group">
-          <label>Votre histoire / Contexte de départ :</label>
-          <textarea id="inputLore" placeholder="Ex: Ancien espoir cherchant à tout prix à remonter sur le ring..."></textarea>
+          <label>Votre passé / Vos motivations (Votre Lore) :</label>
+          <textarea id="inputLore" placeholder="Ex: Viré de ma salle précédente suite à un clash, je repars de zéro dans un quartier difficile avec l'ambition de percer..."></textarea>
         </div>
-        <button class="action-btn" onclick="startSimulation()">Lancer l'aventure</button>
+        <button class="action-btn" onclick="startSimulation()">Ouvrir le premier chapitre</button>
       </div>
 
-      <!-- Étape 3 : Contrôles du jeu -->
+      <!-- Étape 3 : Jeu principal -->
       <div id="gameControls" style="display:none;" class="setup-box">
-        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom: 4px;">Choix stratégiques :</div>
+        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom: 4px;">Décisions et actions :</div>
         <div class="options-grid" id="optionsGrid"></div>
         
         <div class="custom-input-group">
-          <input type="text" id="customAction" placeholder="Tenter une action personnalisée...">
-          <button class="action-btn" onclick="sendCustomAction()">Valider</button>
+          <input type="text" id="customAction" placeholder="Ou tapez une action totalement libre..." onkeypress="if(event.key === 'Enter') sendCustomAction()">
+          <button class="action-btn" id="customSubmitBtn" onclick="sendCustomAction()">Agir</button>
         </div>
       </div>
     </div>
@@ -156,14 +154,34 @@
     let charLore = "";
     let history = [];
     let stats = {};
-    let turnCount = 0;
+    let chapterCount = 0;
+    let isProcessing = false; // Verrou anti-double clic
 
     const modeConfigs = {
-      survie: { name: "Survie", quest: "Trouver de l'eau et un abri", stats: { hp: 100, faim: 80, energie: 90, ressources: 25 }, labels: { hp: "Santé (PV)", faim: "Faim", energie: "Énergie", ressources: "Matériaux" } },
-      business: { name: "Business", quest: "Lancer le premier produit", stats: { capital: 5000, reseau: 15, reputation: 10, stress: 20 }, labels: { capital: "Capital (€)", reseau: "Réseau", reputation: "Réputation", stress: "Stress" } },
-      crime: { name: "Illégal", quest: "Blanchir l'argent sale", stats: { argentSale: 2500, parano: 15, respect: 30, pv: 100 }, labels: { argentSale: "Argent sale", parano: "Paranoïa", respect: "Respect", pv: "Santé (PV)" } },
-      guerre: { name: "Guerre", quest: "Sécuriser le secteur", stats: { munitions: 45, moral: 80, sante: 100, commandement: 50 }, labels: { munitions: "Munitions", moral: "Moral", sante: "Santé", commandement: "Autorité" } },
-      combat: { name: "Combat", quest: "Gagner le championnat", stats: { forme: 80, technique: 50, energie: 90, victoires: 0 }, labels: { forme: "Forme physique", technique: "Technique", energie: "Énergie", victoires: "Victoires" } }
+      combat: { 
+        name: "Carrière de Combattant", 
+        quest: "S'imposer au sommet malgré les obstacles", 
+        stats: { energie: 85, moral: 80, argent: 150, technique: 40 }, 
+        labels: { energie: "Énergie physique", moral: "Moral & Mental", argent: "Trésorerie (€)", technique: "Technique" } 
+      },
+      business: { 
+        name: "Start-up & Business", 
+        quest: "Faire prospérer l'entreprise sans s'épuiser", 
+        stats: { tresorerie: 4000, stress: 30, reseau: 20, reputation: 15 }, 
+        labels: { tresorerie: "Trésorerie (€)", stress: "Niveau de Stress", reseau: "Réseau pro", reputation: "Réputation" } 
+      },
+      survie: { 
+        name: "Survie en Territoire Hostile", 
+        quest: "Tenir bon face aux éléments", 
+        stats: { sante: 100, faim: 75, abri: 20, moral: 60 }, 
+        labels: { sante: "Santé (PV)", faim: "Ravitaillement", abri: "Solidité abri", moral: "Moral" } 
+      },
+      crime: { 
+        name: "Monde Clandestin", 
+        quest: "Gérer ses affaires sans attirer les ennuis", 
+        stats: { cash: 2000, parano: 25, respect: 40, pv: 100 }, 
+        labels: { cash: "Cash propre", parano: "Paranoïa", respect: "Respect", pv: "Intégrité" } 
+      }
     };
 
     function selectMode(modeKey) {
@@ -173,12 +191,12 @@
     }
 
     function startSimulation() {
-      charName = document.getElementById('inputName').value.trim() || "Inconnu";
-      charLore = document.getElementById('inputLore').value.trim() || "Aucun détail fourni.";
+      charName = document.getElementById('inputName5') || document.getElementById('inputName').value.trim() || "Inconnu";
+      charLore = document.getElementById('inputLore').value.trim() || "Prêt à tout pour réussir.";
       
       let config = modeConfigs[currentMode];
       stats = { ...config.stats };
-      turnCount = 0;
+      chapterCount = 1;
 
       document.getElementById('loreArea').style.display = 'none';
       document.getElementById('gameControls').style.display = 'flex';
@@ -188,12 +206,12 @@
       document.getElementById('questBanner').innerText = `Objectif : ${config.quest}`;
       
       history = [
-        { role: "system", text: `Personnage créé : ${charName}. Contexte : "${charLore}"` },
-        { role: "ai", text: `Bienvenue dans cette simulation de type ${config.name}. Votre histoire commence maintenant. ${charLore}` }
+        { role: "system", text: `Début de la simulation — Profil : ${charName} (${config.name}).` },
+        { role: "ai", text: `Chapitre 1 : Les fondations.\n\n${charLore}\n\nL'atmosphère est lourde en ce début de parcours. Entre les doutes personnels et la pression extérieure, tu sens que chaque décision va façonner la suite de ton histoire. Tu te trouves à un carrefour important.` }
       ];
 
       renderStatsUI();
-      triggerNextTurn("La tension monte. Le décor est planté, comment agissez-vous pour progresser ?");
+      renderGameInterface();
     }
 
     function renderStatsUI() {
@@ -205,13 +223,20 @@
       }
     }
 
-    function renderLogAndOptions(narrative, options) {
+    function renderGameInterface() {
       let logPanel = document.getElementById('logPanel');
-      logPanel.innerHTML = history.map(h => `<div class="msg ${h.role}">${h.text}</div>`).join('');
+      logPanel.innerHTML = history.map(h => `<div class="msg ${h.role}">${h.text.replace(/\n/g, '<br>')}</div>`).join('');
       logPanel.scrollTop = logPanel.scrollHeight;
 
       let optionsGrid = document.getElementById('optionsGrid');
       optionsGrid.innerHTML = '';
+
+      if (isProcessing) {
+        optionsGrid.innerHTML = `<div style="color: #94a3b8; font-size: 0.9em; font-style: italic; padding: 10px;">Rédaction de la suite en cours...</div>`;
+        return;
+      }
+
+      let options = getRichNarrativeOptions();
       options.forEach(opt => {
         let btn = document.createElement('button');
         btn.className = 'option-btn';
@@ -221,85 +246,91 @@
       });
     }
 
-    function triggerNextTurn(narrative) {
-      history.push({ role: "ai", text: narrative });
-      turnCount++;
-      let options = getEvolvingOptions();
-      renderLogAndOptions(narrative, options);
-    }
-
-    // Génère des choix qui évoluent selon le tour et le mode
-    function getEvolvingOptions() {
+    function getRichNarrativeOptions() {
+      // Génère des choix narratifs nuancés et orientés "vie réelle"
       if (currentMode === 'combat') {
-        if (turnCount === 1) {
-          return [
-            { text: "Faire un sparing intense avec un partenaire lourd", effects: { technique: 10, forme: -15, energie: -10 } },
-            { text: "Travailler les esquives et le jeu de jambes", effects: { technique: 15, energie: -10 } },
-            { text: "Prendre un jour de repos pour soigner les courbatures", effects: { energie: 20, forme: 5 } }
-          ];
-        } else if (turnCount === 2) {
-          return [
-            { text: "Accepter un combat de placement clandestin", effects: { victoires: 1, technique: 10, forme: -20 } },
-            { text: "Analyser les vidéos de votre futur adversaire", effects: { technique: 15, energie: -5 } },
-            { text: "Suivre un régime strict avec le nutritionniste", effects: { forme: 15, energie: 5 } }
-          ];
-        } else {
-          return [
-            { text: "Monter sur le ring pour le grand championnat régional", effects: { victoires: 1, forme: -30 } },
-            { text: "Intensifier l'entraînement physique à l'extrême", effects: { forme: 20, energie: -25 } },
-            { text: "Relâcher la pression et souffler un peu", effects: { energie: 30 } }
-          ];
-        }
-      } else {
-        // Options génériques évolutives pour les autres modes
         return [
-          { text: "Fancer tête baissée sur l'objectif principal", effects: { energie: -15 } },
-          { text: "Analyser les risques et sécuriser vos arrières", effects: { energie: -5 } },
-          { text: "Chercher du soutien auprès de vos contacts", effects: { energie: -10 } }
+          { text: "T'entraîner durement à la salle malgré une légère fatigue musculaire", narrative: "Tu pousses ton corps dans ses retranchements sous l'œil exigeant de ton entraîneur. La séance est exténuante, mais ta technique s'affine.", effects: { technique: 8, energie: -15, moral: 5 } },
+          { text: "Prendre une soirée off pour voir des proches et couper un peu", narrative: "Tu décides de souffler en passant du temps hors de la salle. Ça fait du bien au moral, même si tu culpabilises un peu de lâcher le rythme.", effects: { moral: 15, energie: 10, technique: -2 } },
+          { text: "Accepter un combat de substitution mal payé pour te faire un nom", narrative: "Le combat est rude, face à un adversaire coriace, mais tu en sors vainqueur avec une réputation grandissante dans le milieu.", effects: { argent: 80, technique: 5, energie: -25, moral: 10 } }
+        ];
+      } else if (currentMode === 'business') {
+        return [
+          { text: "Passer le week-end entier à peaufiner le produit avec l'équipe", narrative: "L'ambiance est électrique au bureau. L'avancée technologique est majeure, mais le niveau de stress monte en flèche pour tout le monde.", effects: { tresorerie: -200, stress: 20, reputation: 10 } },
+          { text: "Sortir faire du networking dans un salon pro pour trouver des clients", narrative: "Tu échanges des cartes de visite jusqu'à tard. Le réseau s'agrandit, même si ton portefeuille prend un petit coup avec les frais de déplacement.", effects: { reseau: 15, tresorerie: -150, reputation: 5 } },
+          { text: "Déléguer et s'accorder une vraie coupure pour vider ton esprit", narrative: "Tu laisses ton équipe gérer les urgences pendant 48 heures. Ton esprit se clarifie, ce qui te permet de revenir avec des idées beaucoup plus lucides.", effects: { stress: -25, energie: 10 } }
+        ];
+      } else if (currentMode === 'survie') {
+        return [
+          { text: "Explorer les zones boisées lointaines à la recherche de vivres", narrative: "L'expédition est longue et périlleuse. Tu reviens fatigué, mais tu as réussi à sécuriser de quoi tenir quelques jours de plus.", effects: { faim: 20, sante: -10, moral: 5 } },
+          { text: "Consolider méticuleusement le campement avant l'arrivée de la nuit", narrative: "Tu renforces les barricades et calfeutres l'abri. Ton espace de vie devient plus sûr, ce qui te garantit un meilleur repos.", effects: { abri: 15, energie: -10 } },
+          { text: "Économiser au maximum l'eau et les ressources en restant au repos", narrative: "Tu fais profil bas pour ne pas gaspiller d'énergie. La faim commence à se faire sentir, mais ton esprit reste concentré.", effects: { faim: -10, moral: -5 } }
+        ];
+      } else {
+        return [
+          { text: "Conclure une petite affaire rapide mais risquée dans le quartier", narrative: "L'opération s'est déroulée sans accroc majeur, mais la tension nerveuse reste palpable après coup.", effects: { cash: 400, parano: 15, respect: 5 } },
+          { text: "Prendre du recul et changer discrètement de planque", narrative: "Tu passes inaperçu pendant un moment. Tes arrières sont mieux sécurisés, ce qui te permet de souffler un peu.", effects: { parano: -20, cash: -50 } },
+          { text: "Tisser de nouveaux liens avec des figures locales influentes", narrative: "Un échange discret dans un bar sombre te permet de gagner la confiance d'un acteur clé du secteur.", effects: { respect: 15, parano: 10 } }
         ];
       }
     }
 
     function handleChoice(opt) {
+      if (isProcessing) return;
+      isProcessing = true;
+      renderGameInterface(); // Désactive les boutons instantanément
+
       history.push({ role: "user", text: opt.text });
-      let feedback = `Action : "${opt.text}".`;
       
+      // Applique les effets avec des plafonds logiques
       for (let key in opt.effects) {
         if (stats[key] !== undefined) {
-          // Applique l'effet avec des limites logiques (ex: 0 à 100 max pour éviter l'explosion des stats)
-          if (key !== 'victoires') {
-            stats[key] = Math.max(0, Math.min(100, stats[key] + opt.effects[key]));
-          } else {
-            stats[key] += opt.effects[key]; // Les victoires peuvent augmenter sans limite
-          }
-          feedback += ` (${key.toUpperCase()} ${opt.effects[key] > 0 ? '+' : ''}${opt.effects[key]})`;
+          stats[key] = Math.max(0, stats[key] + opt.effects[key]);
         }
       }
 
-      renderStatsUI();
-      triggerNextTurn(`Conséquence : ${feedback}. La situation progresse (Étape ${turnCount + 1}). Que faites-vous ensuite ?`);
+      chapterCount++;
+      
+      setTimeout(() => {
+        history.push({ role: "ai", text: `Chapitre ${chapterCount} :\n\n${opt.narrative}\n\nLa situation continue d'évoluer au fil de tes choix. Quelle direction souhaites-tu prendre maintenant ?` });
+        renderStatsUI();
+        isProcessing = false;
+        renderGameInterface();
+      }, 400); // Petit délai fluide pour éviter les bugs de clic
     }
 
     function sendCustomAction() {
+      if (isProcessing) return;
       let input = document.getElementById('customAction');
       let val = input.value.trim();
       if (!val) return;
       input.value = '';
 
+      isProcessing = true;
+      renderGameInterface();
+
       history.push({ role: "user", text: val });
-      triggerNextTurn(`Vous tentez une approche audacieuse : "${val}". L'histoire s'adapte à votre initiative.`);
+      chapterCount++;
+
+      setTimeout(() => {
+        history.push({ role: "ai", text: `Chapitre ${chapterCount} :\n\nTu fais le choix audacieux de : "${val}". Une initiative personnelle qui bouscule le cours des événements et ne laisse personne indifférent.\n\nComment réagis-tu face à ces retombées ?` });
+        renderStatsUI();
+        isProcessing = false;
+        renderGameInterface();
+      }, 400);
     }
 
     function resetGame() {
       currentMode = null;
+      isProcessing = false;
       document.getElementById('setupArea').style.display = 'block';
       document.getElementById('loreArea').style.display = 'none';
       document.getElementById('gameControls').style.display = 'none';
       document.getElementById('charNameVal').innerText = "Inconnu";
       document.getElementById('modeVal').innerText = "Aucun";
-      document.getElementById('questBanner').innerText = "Sélectionnez un mode de jeu pour démarrer...";
+      document.getElementById('questBanner').innerText = "Choisissez votre univers pour commencer l'écriture de votre histoire...";
       document.getElementById('dynamicStatsContainer').innerHTML = `<div style="font-size: 0.85rem; color: #94a3b8;">En attente...</div>`;
-      document.getElementById('logPanel').innerHTML = `<div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour configurer votre histoire.</div>`;
+      document.getElementById('logPanel').innerHTML = `<div class="msg system">Le livre de votre vie est vierge. Sélectionnez un mode pour poser le premier décor.</div>`;
     }
   </script>
 </body>
