@@ -3,38 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Totale - Mode Libre</title>
+  <title>Simulation Interactive Ultime - IA Connectée</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090d16; color: #f1f5f9; min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; }
     
-    .app-container { width: 100%; max-width: 1050px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5); height: 92vh; }
+    .app-container { width: 100%; max-width: 1100px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5); height: 92vh; }
     
     header { background: #1e293b; padding: 16px 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 1.25rem; color: #38bdf8; letter-spacing: 0.5px; font-weight: 700; }
+    header h1 { font-size: 1.25rem; color: #38bdf8; font-weight: 700; }
     .header-info { font-size: 0.85rem; color: #94a3b8; }
 
-    .game-layout { display: grid; grid-template-columns: 1fr 300px; height: calc(92vh - 65px); overflow: hidden; }
+    .game-layout { display: grid; grid-template-columns: 1fr 320px; height: calc(92vh - 65px); overflow: hidden; }
     @media (max-width: 800px) { .game-layout { grid-template-columns: 1fr; overflow-y: auto; height: auto; } }
 
-    /* Zone de chat / récit */
     .chat-section { display: flex; flex-direction: column; height: 100%; border-right: 1px solid #1e293b; background: #0b1120; }
     .log-panel { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
     
     .msg { padding: 14px 18px; border-radius: 8px; font-size: 0.95rem; line-height: 1.6; max-width: 90%; }
-    .msg.system { background: #1e293b; border-left: 3px solid #64748b; color: #cbd5e1; font-style: italic; align-self: center; width: 100%; max-width: 100%; font-size: 0.9rem; }
+    .msg.system { background: #1e293b; border-left: 3px solid #64748b; color: #cbd5e1; font-style: italic; width: 100%; max-width: 100%; font-size: 0.9rem; }
     .msg.user { background: #0284c7; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg.ai { background: #1e293b; border: 1px solid #334155; color: #f8fafc; align-self: flex-start; border-left: 4px solid #38bdf8; border-bottom-left-radius: 2px; width: 100%; max-width: 100%; }
 
-    /* Input zone */
     .input-panel { padding: 15px 20px; background: #1e293b; border-top: 1px solid #334155; display: flex; gap: 10px; }
-    .input-panel textarea { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 0.95rem; resize: none; height: 50px; font-family: inherit; }
+    .input-panel textarea { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 0.95rem; resize: none; height: 55px; font-family: inherit; }
     .input-panel textarea:focus { outline: none; border-color: #38bdf8; }
     .action-btn { background: #0284c7; color: white; border: none; border-radius: 8px; padding: 0 20px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .action-btn:hover:not(:disabled) { background: #0369a1; }
     .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Panneau latéral des stats & perso */
     .side-panel { background: #0f172a; padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
     .panel-section { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
     .panel-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
@@ -46,25 +43,30 @@
     .reset-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; transition: 0.2s; }
     .reset-btn:hover { background: #ef44441a; }
 
-    /* Écran de configuration initiale */
-    .setup-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #090d16; z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px; }
-    .setup-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 30px; width: 100%; max-width: 550px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.7); }
+    .setup-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #090d16; z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
+    .setup-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 30px; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.7); margin: auto; }
     .setup-card h2 { color: #38bdf8; font-size: 1.4rem; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
     .form-group input, .form-group select, .form-group textarea { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 0.95rem; font-family: inherit; }
-    .form-group textarea { height: 90px; resize: none; }
+    .form-group textarea { height: 80px; resize: none; }
+    .error-msg { color: #ef4444; font-size: 0.85rem; display: none; }
   </style>
 </head>
 <body>
 
-  <!-- ÉCRAN DE CONFIGURATION INITIALE (LORE, DIFFICULTÉ, PROJET LIBRE) -->
   <div class="setup-screen" id="setupScreen">
     <div class="setup-card">
-      <h2>Configuration de la Simulation</h2>
+      <h2>Configuration Complète de la Simulation</h2>
       
       <div class="form-group">
-        <label>1. Mode de Simulation :</label>
+        <label>Clé API (Groq ou OpenAI) :</label>
+        <input type="password" id="cfgApiKey" placeholder="Collez votre clé API ici...">
+        <span class="error-msg" id="apiKeyError">Veuillez entrer une clé API valide pour connecter l'IA.</span>
+      </div>
+
+      <div class="form-group">
+        <label>Mode de Simulation :</label>
         <select id="cfgMode">
           <option value="business">💼 Entrepreneuriat & Business (Start-up, commerce, chaussettes...)</option>
           <option value="combat">🏆 Carrière Sportive / Combat (Entraînement, tournois, discipline)</option>
@@ -74,59 +76,54 @@
       </div>
 
       <div class="form-group">
-        <label>2. Niveau de Difficulté :</label>
+        <label>Niveau de Difficulté :</label>
         <select id="cfgDiff">
-          <option value="facile">Facile (Ressources généreuses, erreurs moins punitives)</option>
-          <option value="normal" selected>Normal (Équilibre réaliste, chaque choix compte)</option>
-          <option value="difficile">Difficile (Pression constante, marges d'erreur minimes)</option>
+          <option value="facile">Facile (Ressources généreuses, IA indulgente)</option>
+          <option value="normal" selected>Normal (Équilibre réaliste et punitif)</option>
+          <option value="difficile">Difficile (Pression maximale, échec rapide si incohérent)</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>3. Votre Nom ou Identité :</label>
-        <input type="text" id="cfgName" placeholder="Ex: Alexandre ou Marque 'Sockify'...">
+        <label>Nom du Personnage :</label>
+        <input type="text" id="cfgName" placeholder="Ex: Alexandre...">
       </div>
 
       <div class="form-group">
-        <label>4. Votre Projet Précis (Votre Lore / Idée de départ) :</label>
-        <textarea id="cfgLore" placeholder="Ex: Je lance une marque de chaussettes éco-responsables à Paris avec 3000€ en poche et l'ambition de percer sur le marché..."></textarea>
+        <label>Votre Projet / Lore de Départ (Ex: Je lance une boîte de chaussettes à 3000€...) :</label>
+        <textarea id="cfgLore" placeholder="Décrivez votre point de départ en détail..."></textarea>
       </div>
 
-      <button class="action-btn" style="padding: 14px;" onclick="initSimulation()">Lancer l'aventure</button>
+      <button class="action-btn" style="padding: 14px;" onclick="initSimulation()">Lancer la Simulation Intelligente</button>
     </div>
   </div>
 
-  <!-- INTERFACE DE JEU PRINCIPALE -->
   <div class="app-container">
     <header>
-      <h1 id="appTitle">Simulation Interactive</h1>
+      <h1 id="appTitle">Simulation Intelligente</h1>
       <div class="header-info" id="headerInfo">Tour 1</div>
     </header>
 
     <div class="game-layout">
-      <!-- Section Texte / Chat Libre -->
       <div class="chat-section">
         <div class="log-panel" id="logPanel"></div>
         <div class="input-panel">
-          <textarea id="userInput" placeholder="Que décidez-vous de faire ? (Tapez votre action en toute liberté...)" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
+          <textarea id="userInput" placeholder="Tapez votre action en toute liberté..." onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
           <button class="action-btn" id="submitBtn" onclick="submitAction()">Envoyer</button>
         </div>
       </div>
 
-      <!-- Panneau Latéral : Statistiques dynamiques -->
       <div class="side-panel">
         <div class="panel-section">
-          <div class="panel-title">Identité</div>
+          <div class="panel-title">Profil</div>
           <div class="stat-row"><span class="stat-label">Nom</span><span class="stat-val" id="uiName">-</span></div>
           <div class="stat-row"><span class="stat-label">Mode</span><span class="stat-val" id="uiMode">-</span></div>
           <div class="stat-row"><span class="stat-label">Difficulté</span><span class="stat-val" id="uiDiff">-</span></div>
         </div>
 
         <div class="panel-section">
-          <div class="panel-title">Indicateurs Clés</div>
-          <div id="statsContainer" style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- Rempli dynamiquement -->
-          </div>
+          <div class="panel-title">Statistiques & Jauges</div>
+          <div id="statsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
         <button class="reset-btn" onclick="resetToSetup()">Recommencer à zéro</button>
@@ -136,12 +133,14 @@
 
   <script>
     let gameState = {
+      apiKey: '',
       mode: '',
       difficulty: 'normal',
       name: '',
       lore: '',
       turn: 1,
-      stats: {}
+      stats: {},
+      history: []
     };
 
     const modeConfigs = {
@@ -152,34 +151,25 @@
     };
 
     function initSimulation() {
+      let apiKey = document.getElementById('cfgApiKey').value.trim();
+      if (!apiKey) {
+        document.getElementById('apiKeyError').style.display = 'block';
+        return;
+      }
+
       let mode = document.getElementById('cfgMode').value;
       let diff = document.getElementById('cfgDiff').value;
       let name = document.getElementById('cfgName').value.trim() || "Anonyme";
       let lore = document.getElementById('cfgLore').value.trim() || "Prêt à tout pour réussir.";
 
+      gameState.apiKey = apiKey;
       gameState.mode = mode;
       gameState.difficulty = diff;
       gameState.name = name;
       gameState.lore = lore;
       gameState.turn = 1;
       gameState.stats = { ...modeConfigs[mode].stats };
-
-      // Ajustement selon la difficulté
-      if (diff === 'facile') {
-        for (let s in gameState.stats) {
-          if (s === 'argent' || s === 'cash' || s === 'ressources' || s === 'sante' || s === 'forme' || s === 'energie') {
-            gameState.stats[s] = Math.round(gameState.stats[s] * 1.3);
-          }
-        }
-      } else if (diff === 'difficile') {
-        for (let s in gameState.stats) {
-          if (s === 'argent' || s === 'cash' || s === 'ressources') {
-            gameState.stats[s] = Math.round(gameState.stats[s] * 0.7);
-          } else if (s === 'stress' || s === 'parano') {
-            gameState.stats[s] = Math.round(gameState.stats[s] * 1.5);
-          }
-        }
-      }
+      gameState.history = [];
 
       document.getElementById('setupScreen').style.display = 'none';
       document.getElementById('uiName').innerText = name;
@@ -191,8 +181,8 @@
       
       let log = document.getElementById('logPanel');
       log.innerHTML = `
-        <div class="msg system">Initialisation de la partie en mode <b>${modeConfigs[mode].name}</b> (${diff.toUpperCase()}).</div>
-        <div class="msg ai"><b>Chapitre 1 : Les Premiers Pas</b><br><br><b>Contexte initial :</b> ${lore}<br><br>Le décor est planté. Tu disposes de tes ressources de départ et de ta détermination. Ici, aucune limite fermée : tu peux taper l'action précise que tu veux mener, négocier, t'entraîner, fuir ou innover. Que fais-tu pour lancer ton projet ?</div>
+        <div class="msg system">Simulation initialisée en mode <b>${modeConfigs[mode].name}</b> (${diff.toUpperCase()}). Connexion IA active.</div>
+        <div class="msg ai"><b>Chapitre 1 : Le Commencement</b><br><br><b>Projet initial :</b> ${lore}<br><br>Le décor est planté. Tu as quartier libre absolu : décris précisément ce que tu fais, comment tu t'y prends, et l'IA jugera logiquement de tes résultats. Que fais-tu ?</div>
       `;
     }
 
@@ -204,70 +194,90 @@
         container.innerHTML += `
           <div class="stat-row">
             <span class="stat-label">${config.labels[key] || key}</span>
-            <span class="stat-val">${gameState.stats[key]}</span>
+            <span class="stat-val" id="stat-${key}">${gameState.stats[key]}</span>
           </div>
         `;
       }
       document.getElementById('headerInfo').innerText = `Tour ${gameState.turn}`;
     }
 
-    function submitAction() {
+    async function submitAction() {
       let textarea = document.getElementById('userInput');
       let actionText = textarea.value.trim();
       if (!actionText) return;
 
       textarea.value = '';
       let log = document.getElementById('logPanel');
-
-      // Ajout du message utilisateur
       log.innerHTML += `<div class="msg user">${actionText}</div>`;
       log.scrollTop = log.scrollHeight;
 
-      // Verrouillage temporaire pendant le calcul
       document.getElementById('submitBtn').disabled = true;
       textarea.disabled = true;
 
-      setTimeout(() => {
-        gameState.turn++;
-        
-        // Simulation locale intelligente de l'impact des actions libres
-        let textLower = actionText.toLowerCase();
-        let feedbackEffects = "";
-        
-        for (let key in gameState.stats) {
-          let change = 0;
-          if (textLower.includes('repos') || textLower.includes('sommeil') || textLower.includes('dormir')) {
-            if (key === 'energie' || key === 'moral' || key === 'sante' || key === 'stress' || key === 'parano') {
-              change = (key === 'stress' || key === 'parano') ? -15 : 15;
-            }
-          } else if (textLower.includes('argent') || textLower.includes('vendre') || textLower.includes('client') || textLower.includes('travailler')) {
-            if (key === 'argent' || key === 'cash') change = Math.floor(Math.random() * 300) + 100;
-            if (key === 'energie' || key === 'stress' || key === 'parano') change = -10;
-          } else {
-            // Effet aléatoire équilibré basé sur l'action textuelle
-            change = Math.floor(Math.random() * 11) - 5; 
-          }
+      // Prompt système strict pour forcer la logique et le format JSON
+      let systemPrompt = `Tu es le moteur expert d'un jeu de rôle textuel de simulation réaliste (${gameState.mode}). Le joueur s'appelle ${gameState.name}, sa difficulté est "${gameState.difficulty}", et son projet de départ est : "${gameState.lore}". 
+Ses stats actuelles sont : ${JSON.stringify(gameState.stats)}.
+Règles strictes :
+1. Analyse l'action textuelle du joueur avec une logique implacable et réaliste (si l'action est absurde, satirique ou magique genre "devenir dieu", sanctionne-la logiquement ou fais échouer le joueur avec réalisme selon la difficulté).
+2. Mets à jour les statistiques de manière cohérente (hausse ou baisse selon l'action).
+3. Réponds EXCLUSIVEMENT sous la forme d'un objet JSON valide (sans markdown autour si possible, ou juste le JSON) respectant cette structure exacte :
+{
+  "narrative": "Le texte de l'histoire qui raconte les conséquences de l'action du joueur de manière immersive...",
+  "statChanges": {
+    "nom_de_stat": valeur_ajoutee_ou_soustraite (ex: -10 ou +15)
+  },
+  "gameOver": false
+}`;
 
-          if (change !== 0) {
-            gameState.stats[key] = Math.max(0, gameState.stats[key] + change);
-            feedbackEffects += ` | ${key.toUpperCase()} ${change > 0 ? '+' : ''}${change}`;
+      try {
+        let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${gameState.apiKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: actionText }
+            ],
+            temperature: 0.7
+          })
+        });
+
+        let data = await response.json();
+        if (data.error) {
+          throw new Error(data.error.message);
+        }
+
+        let content = data.choices[0].message.content;
+        // Nettoyage au cas où l'IA met des balises markdown de code
+        content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+        let result = JSON.parse(content);
+
+        // Appliquer les changements de stats
+        if (result.statChanges) {
+          for (let s in result.statChanges) {
+            if (gameState.stats[s] !== undefined) {
+              gameState.stats[s] = Math.max(0, gameState.stats[s] + result.statChanges[s]);
+            }
           }
         }
 
+        gameState.turn++;
         renderStats();
 
-        // Génération de la réponse narrative
-        let narrativeResponse = `<b>Tour ${gameState.turn} : Conséquences de votre initiative</b><br><br>
-        Tu as choisi de : <i>"${actionText}"</i>.<br><br>
-        Cette décision impacte directement ton quotidien. Les retombées se font sentir sur le terrain et la situation évolue en conséquence (${feedbackEffects}). Le marché, les imprévus ou l'environnement réagissent à ta démarche. Comment comptes-tu enchaîner ?`;
-
-        log.innerHTML += `<div class="msg ai">${narrativeResponse}</div>`;
+        log.innerHTML += `<div class="msg ai"><b>Tour ${gameState.turn}</b><br><br>${result.narrative}</div>`;
         log.scrollTop = log.scrollHeight;
 
-        document.getElementById('submitBtn').disabled = false;
-        textarea.disabled = false;
-        textarea.focus();
-      }, 600);
+      } catch (err) {
+        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur lors de la communication avec l'IA : ${err.message}. Vérifie ta clé API.</div>`;
+      }
+
+      document.getElementById('submitBtn').disabled = false;
+      textarea.disabled = false;
+      textarea.focus();
     }
 
     function resetToSetup() {
