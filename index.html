@@ -3,281 +3,302 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation Interactive Ultime - Gemini Connecté</title>
+  <title>Simulation Interactive Dynamique</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #090d16; color: #f1f5f9; min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 20px; }
     
-    .app-container { width: 100%; max-width: 1100px; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5); height: 92vh; }
+    .app-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
     
-    header { background: #1e293b; padding: 16px 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 1.25rem; color: #38bdf8; font-weight: 700; }
-    .header-info { font-size: 0.85rem; color: #94a3b8; }
+    header { text-align: center; padding: 10px 0; border-bottom: 1px solid #1e293b; }
+    header h1 { font-size: 1.6rem; color: #38bdf8; letter-spacing: 1px; }
+    header p { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
 
-    .game-layout { display: grid; grid-template-columns: 1fr 320px; height: calc(92vh - 65px); overflow: hidden; }
-    @media (max-width: 800px) { .game-layout { grid-template-columns: 1fr; overflow-y: auto; height: auto; } }
-
-    .chat-section { display: flex; flex-direction: column; height: 100%; border-right: 1px solid #1e293b; background: #0b1120; }
-    .log-panel { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .banner { background: #1e293b; border: 1px solid #334155; border-left: 4px solid #38bdf8; padding: 12px 16px; border-radius: 6px; font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
     
-    .msg { padding: 14px 18px; border-radius: 8px; font-size: 0.95rem; line-height: 1.6; max-width: 90%; }
-    .msg.system { background: #1e293b; border-left: 3px solid #64748b; color: #cbd5e1; font-style: italic; width: 100%; max-width: 100%; font-size: 0.9rem; }
-    .msg.user { background: #0284c7; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
-    .msg.ai { background: #1e293b; border: 1px solid #334155; color: #f8fafc; align-self: flex-start; border-left: 4px solid #38bdf8; border-bottom-left-radius: 2px; width: 100%; max-width: 100%; }
+    .main-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+    @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
 
-    .input-panel { padding: 15px 20px; background: #1e293b; border-top: 1px solid #334155; display: flex; gap: 10px; }
-    .input-panel textarea { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 0.95rem; resize: none; height: 55px; font-family: inherit; }
-    .input-panel textarea:focus { outline: none; border-color: #38bdf8; }
-    .action-btn { background: #0284c7; color: white; border: none; border-radius: 8px; padding: 0 20px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .action-btn:hover:not(:disabled) { background: #0369a1; }
-    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .log-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .msg { padding: 10px 14px; border-radius: 6px; font-size: 0.95rem; line-height: 1.5; }
+    .msg.system { background: #0f172a; border-left: 3px solid #64748b; color: #cbd5e1; }
+    .msg.user { background: #0369a1; color: #fff; align-self: flex-end; max-width: 85%; }
+    .msg.ai { background: #334155; color: #f8fafc; align-self: flex-start; max-width: 95%; }
 
-    .side-panel { background: #0f172a; padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
-    .panel-section { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-    .panel-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    .side-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .panel-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
     
-    .stat-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-    .stat-label { color: #94a3b8; }
-    .stat-val { font-weight: 600; color: #f8fafc; }
+    .stat-group { display: flex; flex-direction: column; gap: 4px; }
+    .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
+    .stat-value { font-size: 1rem; font-weight: 600; color: #f8fafc; }
 
-    .reset-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; transition: 0.2s; }
+    .controls-panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; }
+    
+    .mode-selection-title { font-size: 1rem; color: #38bdf8; font-weight: 600; margin-bottom: 12px; }
+    .modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .mode-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px; text-align: left; cursor: pointer; transition: 0.2s; }
+    .mode-card:hover { border-color: #38bdf8; background: #1e293b; }
+    .mode-card h3 { font-size: 0.9rem; color: #f8fafc; margin-bottom: 4px; }
+    .mode-card p { font-size: 0.75rem; color: #94a3b8; line-height: 1.3; }
+
+    .setup-box { display: flex; flex-direction: column; gap: 12px; }
+    .options-grid { display: flex; flex-direction: column; gap: 8px; }
+    .option-btn { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 12px 14px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 0.9rem; transition: 0.2s; font-weight: 500; }
+    .option-btn:hover { background: #334155; border-color: #38bdf8; }
+
+    .custom-input-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #334155; padding-top: 10px; }
+    .custom-input-group input { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.85rem; }
+    .action-btn { padding: 10px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .action-btn:hover { background: #0369a1; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .form-group label { font-size: 0.85rem; color: #94a3b8; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 0.9rem; }
+    .form-group textarea { resize: vertical; height: 70px; }
+
+    .reset-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; width: 100%; margin-top: 10px; }
     .reset-btn:hover { background: #ef44441a; }
-
-    .setup-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #090d16; z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
-    .setup-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 30px; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.7); margin: auto; }
-    .setup-card h2 { color: #38bdf8; font-size: 1.4rem; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
-    .form-group input, .form-group select, .form-group textarea { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 0.95rem; font-family: inherit; }
-    .form-group textarea { height: 80px; resize: none; }
-    .error-msg { color: #ef4444; font-size: 0.85rem; display: none; }
   </style>
 </head>
 <body>
 
-  <div class="setup-screen" id="setupScreen">
-    <div class="setup-card">
-      <h2>Configuration de la Simulation (Gemini)</h2>
-      
-      <div class="form-group">
-        <label>Clé API Gemini (Google AI Studio) :</label>
-        <input type="password" id="cfgApiKey" placeholder="Collez votre clé Gemini ici...">
-        <span class="error-msg" id="apiKeyError">Veuillez entrer une clé API valide.</span>
-      </div>
-
-      <div class="form-group">
-        <label>Mode de Simulation :</label>
-        <select id="cfgMode">
-          <option value="business">💼 Entrepreneuriat & Business (Start-up, commerce, chaussettes...)</option>
-          <option value="combat">🏆 Carrière Sportive / Combat (Entraînement, tournois, discipline)</option>
-          <option value="survie">🌲 Survie en Milieu Hostile (Ressources, éléments, gestion des risques)</option>
-          <option value="crime">🕶️ Monde Clandestin & Affaires (Paranoïa, réseaux, argent)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Niveau de Difficulté :</label>
-        <select id="cfgDiff">
-          <option value="facile">Facile (Ressources généreuses, IA indulgente)</option>
-          <option value="normal" selected>Normal (Équilibre réaliste et punitif)</option>
-          <option value="difficile">Difficile (Pression maximale, échec rapide si incohérent)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Nom du Personnage :</label>
-        <input type="text" id="cfgName" placeholder="Ex: Alexandre...">
-      </div>
-
-      <div class="form-group">
-        <label>Votre Projet / Lore de Départ :</label>
-        <textarea id="cfgLore" placeholder="Ex: Je lance une marque de chaussettes à 3000€..."></textarea>
-      </div>
-
-      <button class="action-btn" style="padding: 14px;" onclick="initSimulation()">Lancer la Simulation Gemini</button>
-    </div>
-  </div>
-
   <div class="app-container">
     <header>
-      <h1 id="appTitle">Simulation Gemini</h1>
-      <div class="header-info" id="headerInfo">Tour 1</div>
+      <h1>SIMULATION INTERACTIVE DYNAMIQUE</h1>
+      <p>Création de profil et progression narrative</p>
     </header>
 
-    <div class="game-layout">
-      <div class="chat-section">
-        <div class="log-panel" id="logPanel"></div>
-        <div class="input-panel">
-          <textarea id="userInput" placeholder="Tapez votre action en toute liberté..." onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitAction(); }"></textarea>
-          <button class="action-btn" id="submitBtn" onclick="submitAction()">Envoyer</button>
-        </div>
+    <div class="banner">
+      <span>🎯</span>
+      <span id="questBanner">Sélectionnez un mode de jeu pour démarrer...</span>
+    </div>
+
+    <div class="main-grid">
+      <div class="log-panel" id="logPanel">
+        <div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour configurer votre histoire.</div>
       </div>
 
       <div class="side-panel">
-        <div class="panel-section">
-          <div class="panel-title">Profil</div>
-          <div class="stat-row"><span class="stat-label">Nom</span><span class="stat-val" id="uiName">-</span></div>
-          <div class="stat-row"><span class="stat-label">Mode</span><span class="stat-val" id="uiMode">-</span></div>
-          <div class="stat-row"><span class="stat-label">Difficulté</span><span class="stat-val" id="uiDiff">-</span></div>
+        <div class="panel-title">Profil du Personnage</div>
+        <div class="stat-group">
+          <div class="stat-label">Nom / Identité</div>
+          <div class="stat-value" id="charNameVal" style="color: #38bdf8;">Inconnu</div>
         </div>
-
-        <div class="panel-section">
-          <div class="panel-title">Statistiques & Jauges</div>
-          <div id="statsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <div class="stat-group">
+          <div class="stat-label">Mode Actuel</div>
+          <div class="stat-value" id="modeVal">Aucun</div>
         </div>
+        <div id="dynamicStatsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 0.85rem; color: #94a3b8;">En attente...</div>
+        </div>
+        <button class="reset-btn" onclick="resetGame()">Recommencer</button>
+      </div>
+    </div>
 
-        <button class="reset-btn" onclick="resetToSetup()">Recommencer à zéro</button>
+    <div class="controls-panel">
+      <!-- Étape 1 : Choix du Mode -->
+      <div id="setupArea">
+        <div class="mode-selection-title">1. Choisissez votre mode d'histoire :</div>
+        <div class="modes-grid">
+          <div class="mode-card" onclick="selectMode('survie')">
+            <h3>🌲 Survie</h3>
+            <p>Milieu hostile. Santé, faim et énergie.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('business')">
+            <h3>💼 Business</h3>
+            <p>Start-up, capital et réseau.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('crime')">
+            <h3>🕶️ Illégal / Crime</h3>
+            <p>Monde clandestin et paranoïa.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('guerre')">
+            <h3>⚔️ Tactique & Guerre</h3>
+            <p>Zone de conflit et moral.</p>
+          </div>
+          <div class="mode-card" onclick="selectMode('combat')">
+            <h3>🏆 Sport de Combat</h3>
+            <p>Forme, technique et victoires.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 2 : Création du Lore / Personnage -->
+      <div id="loreArea" style="display:none;" class="setup-box">
+        <div class="mode-selection-title">2. Créez votre Lore et votre identité :</div>
+        <div class="form-group">
+          <label>Nom de votre personnage :</label>
+          <input type="text" id="inputName" placeholder="Ex: Alex Vance, Rocky...">
+        </div>
+        <div class="form-group">
+          <label>Votre histoire / Contexte de départ :</label>
+          <textarea id="inputLore" placeholder="Ex: Ancien espoir cherchant à tout prix à remonter sur le ring..."></textarea>
+        </div>
+        <button class="action-btn" onclick="startSimulation()">Lancer l'aventure</button>
+      </div>
+
+      <!-- Étape 3 : Contrôles du jeu -->
+      <div id="gameControls" style="display:none;" class="setup-box">
+        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom: 4px;">Choix stratégiques :</div>
+        <div class="options-grid" id="optionsGrid"></div>
+        
+        <div class="custom-input-group">
+          <input type="text" id="customAction" placeholder="Tenter une action personnalisée...">
+          <button class="action-btn" onclick="sendCustomAction()">Valider</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    let gameState = {
-      apiKey: '',
-      mode: '',
-      difficulty: 'normal',
-      name: '',
-      lore: '',
-      turn: 1,
-      stats: {}
-    };
+    let currentMode = null;
+    let charName = "";
+    let charLore = "";
+    let history = [];
+    let stats = {};
+    let turnCount = 0;
 
     const modeConfigs = {
-      business: { name: "Business", stats: { argent: 3000, energie: 85, reputation: 10, stress: 20 }, labels: { argent: "Trésorerie (€)", energie: "Énergie", reputation: "Réputation", stress: "Stress" } },
-      combat: { name: "Combat", stats: { forme: 80, technique: 40, argent: 500, moral: 75 }, labels: { forme: "Forme physique", technique: "Technique", argent: "Argent (€)", moral: "Moral" } },
-      survie: { name: "Survie", stats: { sante: 100, faim: 80, ressources: 30, moral: 70 }, labels: { sante: "Santé (PV)", faim: "Ravitaillement", ressources: "Ressources", moral: "Moral" } },
-      crime: { name: "Clandestin", stats: { cash: 2000, parano: 15, respect: 30, integrité: 100 }, labels: { cash: "Cash propre", parano: "Paranoïa", respect: "Respect", integrité: "Intégrité" } }
+      survie: { name: "Survie", quest: "Trouver de l'eau et un abri", stats: { hp: 100, faim: 80, energie: 90, ressources: 25 }, labels: { hp: "Santé (PV)", faim: "Faim", energie: "Énergie", ressources: "Matériaux" } },
+      business: { name: "Business", quest: "Lancer le premier produit", stats: { capital: 5000, reseau: 15, reputation: 10, stress: 20 }, labels: { capital: "Capital (€)", reseau: "Réseau", reputation: "Réputation", stress: "Stress" } },
+      crime: { name: "Illégal", quest: "Blanchir l'argent sale", stats: { argentSale: 2500, parano: 15, respect: 30, pv: 100 }, labels: { argentSale: "Argent sale", parano: "Paranoïa", respect: "Respect", pv: "Santé (PV)" } },
+      guerre: { name: "Guerre", quest: "Sécuriser le secteur", stats: { munitions: 45, moral: 80, sante: 100, commandement: 50 }, labels: { munitions: "Munitions", moral: "Moral", sante: "Santé", commandement: "Autorité" } },
+      combat: { name: "Combat", quest: "Gagner le championnat", stats: { forme: 80, technique: 50, energie: 90, victoires: 0 }, labels: { forme: "Forme physique", technique: "Technique", energie: "Énergie", victoires: "Victoires" } }
     };
 
-    function initSimulation() {
-      let apiKey = document.getElementById('cfgApiKey').value.trim();
-      if (!apiKey) {
-        document.getElementById('apiKeyError').style.display = 'block';
-        return;
-      }
+    function selectMode(modeKey) {
+      currentMode = modeKey;
+      document.getElementById('setupArea').style.display = 'none';
+      document.getElementById('loreArea').style.display = 'flex';
+    }
 
-      let mode = document.getElementById('cfgMode').value;
-      let diff = document.getElementById('cfgDiff').value;
-      let name = document.getElementById('cfgName').value.trim() || "Anonyme";
-      let lore = document.getElementById('cfgLore').value.trim() || "Prêt à tout pour réussir.";
-
-      gameState.apiKey = apiKey;
-      gameState.mode = mode;
-      gameState.difficulty = diff;
-      gameState.name = name;
-      gameState.lore = lore;
-      gameState.turn = 1;
-      gameState.stats = { ...modeConfigs[mode].stats };
-
-      document.getElementById('setupScreen').style.display = 'none';
-      document.getElementById('uiName').innerText = name;
-      document.getElementById('uiMode').innerText = modeConfigs[mode].name;
-      document.getElementById('uiDiff').innerText = diff.toUpperCase();
-      document.getElementById('appTitle').innerText = `Simulation : ${modeConfigs[mode].name}`;
-
-      renderStats();
+    function startSimulation() {
+      charName = document.getElementById('inputName').value.trim() || "Inconnu";
+      charLore = document.getElementById('inputLore').value.trim() || "Aucun détail fourni.";
       
-      let log = document.getElementById('logPanel');
-      log.innerHTML = `
-        <div class="msg system">Simulation initialisée en mode <b>${modeConfigs[mode].name}</b> (${diff.toUpperCase()}). Connexion Gemini active.</div>
-        <div class="msg ai"><b>Chapitre 1 : Le Commencement</b><br><br><b>Projet initial :</b> ${lore}<br><br>Le décor est planté. Tu as quartier libre absolu : décris précisément ce que tu fais, et l'IA jugera logiquement de tes résultats. Que fais-tu ?</div>
-      `;
+      let config = modeConfigs[currentMode];
+      stats = { ...config.stats };
+      turnCount = 0;
+
+      document.getElementById('loreArea').style.display = 'none';
+      document.getElementById('gameControls').style.display = 'flex';
+      
+      document.getElementById('charNameVal').innerText = charName;
+      document.getElementById('modeVal').innerText = config.name;
+      document.getElementById('questBanner').innerText = `Objectif : ${config.quest}`;
+      
+      history = [
+        { role: "system", text: `Personnage créé : ${charName}. Contexte : "${charLore}"` },
+        { role: "ai", text: `Bienvenue ${charName} dans cette simulation de type ${config.name}. Votre histoire commence maintenant.\n\nLore de départ : ${charLore}` }
+      ];
+
+      renderStatsUI();
+      triggerNextTurn("La tension monte. Le décor est planté, comment agissez-vous pour progresser ?");
     }
 
-    function renderStats() {
-      let config = modeConfigs[gameState.mode];
-      let container = document.getElementById('statsContainer');
+    function renderStatsUI() {
+      let config = modeConfigs[currentMode];
+      let container = document.getElementById('dynamicStatsContainer');
       container.innerHTML = '';
-      for (let key in gameState.stats) {
-        container.innerHTML += `
-          <div class="stat-row">
-            <span class="stat-label">${config.labels[key] || key}</span>
-            <span class="stat-val" id="stat-${key}">${gameState.stats[key]}</span>
-          </div>
-        `;
+      for (let key in stats) {
+        container.innerHTML += `<div class="stat-group"><div class="stat-label">${config.labels[key] || key}</div><div class="stat-value">${stats[key]}</div></div>`;
       }
-      document.getElementById('headerInfo').innerText = `Tour ${gameState.turn}`;
     }
 
-    async function submitAction() {
-      let textarea = document.getElementById('userInput');
-      let actionText = textarea.value.trim();
-      if (!actionText) return;
+    function renderLogAndOptions(narrative, options) {
+      let logPanel = document.getElementById('logPanel');
+      logPanel.innerHTML = history.map(h => `<div class="msg ${h.role}">${h.text}</div>`).join('');
+      logPanel.scrollTop = logPanel.scrollHeight;
 
-      textarea.value = '';
-      let log = document.getElementById('logPanel');
-      log.innerHTML += `<div class="msg user">${actionText}</div>`;
-      log.scrollTop = log.scrollHeight;
+      let optionsGrid = document.getElementById('optionsGrid');
+      optionsGrid.innerHTML = '';
+      options.forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt.text;
+        btn.onclick = () => handleChoice(opt);
+        optionsGrid.appendChild(btn);
+      });
+    }
 
-      document.getElementById('submitBtn').disabled = true;
-      textarea.disabled = true;
+    function triggerNextTurn(narrative) {
+      history.push({ role: "ai", text: narrative });
+      turnCount++;
+      let options = getEvolvingOptions();
+      renderLogAndOptions(narrative, options);
+    }
 
-      let systemInstruction = `Tu es le moteur expert d'un jeu de rôle textuel de simulation réaliste (${gameState.mode}). Le joueur s'appelle ${gameState.name}, difficulté: "${gameState.difficulty}", projet: "${gameState.lore}". 
-Ses stats actuelles sont: ${JSON.stringify(gameState.stats)}.
-Règles strictes :
-1. Analyse l'action textuelle du joueur avec une logique implacable et réaliste. Si l'action est absurde (ex: devenir dieu), sanctionne-la logiquement ou fais échouer le joueur.
-2. Mets à jour les statistiques de manière cohérente.
-3. Réponds STRICTEMENT sous format JSON valide sans texte additionnel, avec cette structure exacte :
-{
-  "narrative": "Le texte de l'histoire qui raconte les conséquences...",
-  "statChanges": {
-    "nom_de_stat": valeur_ajoutee_ou_soustraite (ex: -10 ou +15)
-  }
-}`;
-
-      try {
-        let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gameState.apiKey}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: systemInstruction },
-                  { text: `Action du joueur : ${actionText}` }
-                ]
-              }
-            ]
-          })
-        });
-
-        let data = await response.json();
-        if (data.error) {
-          throw new Error(data.error.message);
+    // Génère des choix qui évoluent selon le tour et le mode
+    function getEvolvingOptions() {
+      if (currentMode === 'combat') {
+        if (turnCount === 1) {
+          return [
+            { text: "Faire un sparing intense avec un partenaire lourd", effects: { technique: 10, forme: -15, energie: -10 } },
+            { text: "Travailler les esquives et le jeu de jambes", effects: { technique: 15, energie: -10 } },
+            { text: "Prendre un jour de repos pour soigner les courbatures", effects: { energie: 20, forme: 5 } }
+          ];
+        } else if (turnCount === 2) {
+          return [
+            { text: "Accepter un combat de placement clandestin", effects: { victoires: 1, technique: 10, forme: -20 } },
+            { text: "Analyser les vidéos de votre futur adversaire", effects: { technique: 15, energie: -5 } },
+            { text: "Suivre un régime strict avec le nutritionniste", effects: { forme: 15, energie: 5 } }
+          ];
+        } else {
+          return [
+            { text: "Monter sur le ring pour le grand championnat régional", effects: { victoires: 1, forme: -30 } },
+            { text: "Intensifier l'entraînement physique à l'extrême", effects: { forme: 20, energie: -25 } },
+            { text: "Relâcher la pression et souffler un peu", effects: { energie: 30 } }
+          ];
         }
+      } else {
+        // Options génériques évolutives pour les autres modes
+        return [
+          { text: "Fancer tête baissée sur l'objectif principal", effects: { energie: -15 } },
+          { text: "Analyser les risques et sécuriser vos arrières", effects: { energie: -5 } },
+          { text: "Chercher du soutien auprès de vos contacts", effects: { energie: -10 } }
+        ];
+      }
+    }
 
-        let rawText = data.candidates[0].content.parts[0].text;
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        let result = JSON.parse(rawText);
-
-        if (result.statChanges) {
-          for (let s in result.statChanges) {
-            if (gameState.stats[s] !== undefined) {
-              gameState.stats[s] = Math.max(0, gameState.stats[s] + result.statChanges[s]);
-            }
+    function handleChoice(opt) {
+      history.push({ role: "user", text: opt.text });
+      let feedback = `Action : "${opt.text}".`;
+      
+      for (let key in opt.effects) {
+        if (stats[key] !== undefined) {
+          if (key !== 'victoires') {
+            stats[key] = Math.max(0, Math.min(100, stats[key] + opt.effects[key]));
+          } else {
+            stats[key] += opt.effects[key];
           }
+          feedback += ` (${key.toUpperCase()} ${opt.effects[key] > 0 ? '+' : ''}${opt.effects[key]})`;
         }
-
-        gameState.turn++;
-        renderStats();
-
-        log.innerHTML += `<div class="msg ai"><b>Tour ${gameState.turn}</b><br><br>${result.narrative}</div>`;
-        log.scrollTop = log.scrollHeight;
-
-      } catch (err) {
-        log.innerHTML += `<div class="msg system" style="color: #ef4444;">Erreur Gemini : ${err.message}. Vérifie ta clé API.</div>`;
       }
 
-      document.getElementById('submitBtn').disabled = false;
-      textarea.disabled = false;
-      textarea.focus();
+      renderStatsUI();
+      triggerNextTurn(`Conséquence : ${feedback}. L'histoire passe à l'étape ${turnCount + 1}. Quelles sont vos directives ?`);
     }
 
-    function resetToSetup() {
-      document.getElementById('setupScreen').style.display = 'flex';
-      document.getElementById('logPanel').innerHTML = '';
+    function sendCustomAction() {
+      let input = document.getElementById('customAction');
+      let val = input.value.trim();
+      if (!val) return;
+      input.value = '';
+
+      history.push({ role: "user", text: val });
+      triggerNextTurn(`Vous tentez une approche personnalisée : "${val}". L'environnement réagit à votre initiative.`);
+    }
+
+    function resetGame() {
+      currentMode = null;
+      document.getElementById('setupArea').style.display = 'block';
+      document.getElementById('loreArea').style.display = 'none';
+      document.getElementById('gameControls').style.display = 'none';
+      document.getElementById('charNameVal').innerText = "Inconnu";
+      document.getElementById('modeVal').innerText = "Aucun";
+      document.getElementById('questBanner').innerText = "Sélectionnez un mode de jeu pour démarrer...";
+      document.getElementById('dynamicStatsContainer').innerHTML = `<div style="font-size: 0.85rem; color: #94a3b8;">En attente...</div>`;
+      document.getElementById('logPanel').innerHTML = `<div class="msg system">Bienvenue ! Choisissez un mode de jeu ci-dessous pour configurer votre histoire.</div>`;
     }
   </script>
 </body>
